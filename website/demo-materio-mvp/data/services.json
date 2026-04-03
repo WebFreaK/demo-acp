@@ -1,0 +1,63 @@
+{
+  "centre_de_coupe": {
+    "name": "Centre de coupe sur mesure",
+    "description": "Service exclusif de coupe sur mesure disponible dans certains magasins Matério",
+    "icon": "🔧",
+    "available_stores": ["Saint-Jérôme", "Terrebonne", "Sainte-Sophie"],
+    "capabilities": [
+      "Mélamine — coupe + bande de chant",
+      "Marches d'escalier — coupe + nez de marche",
+      "Comptoir — coupe 45/90°, trou évier, finition extrémités",
+      "Plancher/céramique — moulures de transition",
+      "Porte panneau — usinage complet, modification",
+      "Bois traité — fabrication sur mesure",
+      "Aluminium — coupe et pliage (10' max)",
+      "Porte extérieure — perçage pêne dormant",
+      "Plexiglas — coupe et perçage"
+    ]
+  },
+  "livraison_specialisee": {
+    "name": "Livraison spécialisée",
+    "description": "Parc de 35 véhicules spécialisés pour livraison résidentielle, commerciale et chantier.",
+    "icon": "🚚",
+    "available_stores": ["Saint-Jérôme", "Terrebonne", "Saint-Hippolyte", "Sainte-Sophie", "Mirabel (Saint-Antoine)", "Mirabel (Saint-Benoît)"],
+    "vehicles": ["camions-girafe", "mât articulé", "plateformes", "cubes"],
+    "capabilities": ["Livraison sur le toit", "Jusqu'au 4e étage", "Dépôt stratégique chantier"],
+    "schedule": "Lundi au samedi"
+  },
+  "financement": {
+    "name": "Financement sans frais ni intérêts",
+    "description": "Financement en versements égaux, sans frais et sans intérêts, sous réserve d'approbation du crédit.",
+    "icon": "💰",
+    "available_stores": ["Saint-Jérôme", "Terrebonne", "Saint-Hippolyte", "Sainte-Sophie", "Mirabel (Saint-Antoine)", "Mirabel (Saint-Benoît)"],
+    "plans": [
+      { "min": 750, "max": 2499, "months": 12 },
+      { "min": 2500, "max": 4999, "months": 18 },
+      { "min": 5000, "max": 7499, "months": 24 },
+      { "min": 7500, "max": 10000, "months": 36 }
+    ],
+    "conditions": "Taxes et livraison payables à l'achat. Sous réserve approbation crédit."
+  },
+  "estimation": {
+    "name": "Service d'estimation et soumission",
+    "description": "Service de soumission pour projets de rénovation et construction neuve.",
+    "icon": "📋",
+    "available_stores": ["Saint-Jérôme", "Terrebonne", "Saint-Hippolyte", "Sainte-Sophie", "Mirabel (Saint-Benoît)"],
+    "contact": "Via formulaire web ou téléphone"
+  },
+  "programme_fidelite": {
+    "name": "Carte Matério",
+    "description": "Programme de fidélité gratuit. 1 point par 1$ d'achat. 1000 points = 10$ de rabais.",
+    "icon": "💳",
+    "earn_rate": "1 point par 1$ d'achat",
+    "redeem": "1000 points = 10$ de rabais",
+    "cost": "Gratuit",
+    "partial_redemption": true
+  },
+  "ouverture_compte": {
+    "name": "Ouverture de compte charge",
+    "description": "Compte charge/comptant pour autoconstructeurs et entrepreneurs. Facturation mensuelle avec relevé détaillé.",
+    "icon": "📄",
+    "available_stores": ["Saint-Jérôme", "Terrebonne", "Saint-Hippolyte", "Mirabel (Saint-Antoine)", "Sainte-Sophie", "Mirabel (Saint-Benoît)"]
+  }
+}

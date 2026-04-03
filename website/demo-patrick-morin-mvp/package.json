@@ -1,0 +1,16 @@
+{
+  "name": "patrick-morin-chatgpt-commerce-mvp",
+  "version": "1.0.0",
+  "description": "Patrick Morin × ChatGPT Commerce — MVP avec OpenAI GPT-4o + Stripe",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "scrape": "node scraper/index.js",
+    "scrape:cron": "node scraper/cron.js",
+    "vercel-dev": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.73.0",
+    "stripe": "^17.4.0"
+  }
+}

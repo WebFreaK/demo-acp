@@ -1,0 +1,87 @@
+{
+  "stores": [
+    {
+      "id": "store-st-jerome",
+      "name": "Saint-Jérôme",
+      "address": "2159, boulevard Curé-Labelle, Saint-Jérôme (Qc) J7Y 1T1",
+      "phone": "450-438-3577",
+      "lat": 45.7833,
+      "lng": -74.0000,
+      "google_maps": "https://goo.gl/maps/1m4cvbxFq3DKHv9YA",
+      "surface_magasin": "39 000 pi²",
+      "cour_bois": "500 000 pi²",
+      "highlight": "Plus grande cour à bois des Laurentides",
+      "year_opened": 1987,
+      "services": ["centre_de_coupe", "livraison", "estimation", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    },
+    {
+      "id": "store-terrebonne",
+      "name": "Terrebonne",
+      "address": "7700, boulevard Laurier, Terrebonne (Qc) J7M 2K8",
+      "phone": "450-478-7557",
+      "lat": 45.7000,
+      "lng": -73.6333,
+      "google_maps": "https://goo.gl/maps/iVV7aRMuVwGvVWsC7",
+      "surface_magasin": "42 000 pi²",
+      "cour_bois": "350 000 pi²",
+      "year_opened": 2005,
+      "services": ["centre_de_coupe", "livraison", "estimation", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    },
+    {
+      "id": "store-st-hippolyte",
+      "name": "Saint-Hippolyte",
+      "address": "Saint-Hippolyte (Qc)",
+      "phone": "450-224-8555",
+      "lat": 45.9333,
+      "lng": -74.0167,
+      "surface_magasin": "20 000 pi²",
+      "cour_bois": "105 000 pi²",
+      "year_opened": 2017,
+      "services": ["livraison", "estimation", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    },
+    {
+      "id": "store-mirabel-st-antoine",
+      "name": "Mirabel (Saint-Antoine)",
+      "address": "Mirabel (Qc)",
+      "phone": "",
+      "lat": 45.6500,
+      "lng": -74.0833,
+      "surface_magasin": "5 500 pi²",
+      "cour_bois": "100 000 pi²",
+      "year_opened": 2021,
+      "services": ["livraison", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    },
+    {
+      "id": "store-ste-sophie",
+      "name": "Sainte-Sophie",
+      "address": "2019, boulevard Sainte-Sophie, Sainte-Sophie (Qc) J5J 2X3",
+      "phone": "450-224-2918",
+      "lat": 45.8200,
+      "lng": -74.0000,
+      "surface_magasin": "28 000 pi²",
+      "cour_bois": "150 000 pi²",
+      "year_opened": 2023,
+      "services": ["centre_de_coupe", "livraison", "estimation", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    },
+    {
+      "id": "store-mirabel-st-benoit",
+      "name": "Mirabel (Saint-Benoît)",
+      "address": "3660, rue Chénier, Mirabel (Qc) J7N 2N1",
+      "phone": "450-258-0129",
+      "lat": 45.5333,
+      "lng": -74.0500,
+      "google_maps": "https://maps.app.goo.gl/si1JtHwCgndHuUVQ9",
+      "surface_magasin": "8 000 pi²",
+      "cour_bois": "80 000 pi²",
+      "year_opened": 2024,
+      "services": ["livraison", "estimation", "financement", "compte"],
+      "hours": { "lun-ven": "7h30-21h", "sam": "8h-17h", "dim": "9h-17h" }
+    }
+  ],
+  "hours_default": "lun-ven 7h30-21h, sam 8h-17h, dim 9h-17h"
+}

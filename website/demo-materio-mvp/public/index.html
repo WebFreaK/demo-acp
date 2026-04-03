@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Matério — Assistant IA</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="mat-topbar">
+    <div class="topbar-left">
+      <span>Livraison spécialisée disponible — camion-girafe, livraison sur le toit</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-store">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Mon magasin : Saint-Jérôme
+      </span>
+      <a href="#">Circulaire</a>
+      <a href="#">Carrières</a>
+    </div>
+  </div>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header id="demo-header">
+    <div class="header-left">
+      <div class="mat-logo">
+        <div class="mat-logo-text">matério</div>
+        <span class="mat-logo-badge">Assistant IA</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="header-search">
+        <input type="text" placeholder="Rechercher un produit, une marque..." disabled>
+        <button class="header-search-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Compte</span>
+      </span>
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Favoris</span>
+      </span>
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span>Panier</span>
+        <span id="header-cart-count" class="cart-count" style="display:none">0</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ═══════════════ NAVIGATION ═══════════════ -->
+  <nav class="mat-nav">
+    <a href="#" class="nav-promo">Circulaire</a>
+    <a href="#">Matériaux</a>
+    <a href="#">Quincaillerie et Outillage</a>
+    <a href="#">Plomberie</a>
+    <a href="#">Électricité</a>
+    <a href="#">Peinture</a>
+    <a href="#">Couvre-plancher</a>
+    <a href="#">Saisonnier</a>
+    <a href="#">Décoration</a>
+    <a href="#">Poêles et Foyers</a>
+  </nav>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main id="demo-main">
+
+    <!-- LEFT — Chat -->
+    <section id="chat-panel">
+      <div class="chat-header">
+        <div class="chat-model-selector">
+          <span class="chat-model-icon">💬</span>
+          <span class="chat-model-name">Assistant Matério</span>
+        </div>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <!-- Suggestions starter -->
+        <div id="suggestions" class="suggestions-container">
+          <div class="suggestions-welcome">
+            <div class="welcome-icon">💬</div>
+            <h2>Comment puis-je vous aider?</h2>
+            <p>Je suis l'assistant Matério. Demandez-moi de l'aide pour vos projets de rénovation et construction.</p>
+          </div>
+          <div class="suggestion-chips">
+            <button class="suggestion-chip" data-message="Je dois refaire ma toiture complète pour un bungalow de 1200 pi². Quels matériaux me faut-il et est-ce que vous offrez la livraison sur le toit?">
+              <span class="chip-icon">🏠</span>
+              <span class="chip-text">Refaire ma toiture</span>
+            </button>
+            <button class="suggestion-chip" data-message="J'aimerais installer un nouveau comptoir de cuisine en bambou. Est-ce que vous pouvez le couper sur mesure?">
+              <span class="chip-icon">🔧</span>
+              <span class="chip-text">Comptoir + coupe sur mesure</span>
+            </button>
+            <button class="suggestion-chip" data-message="Je suis autoconstructeur et je planifie la construction d'un garage double 24×28. J'ai besoin d'une estimation complète des matériaux.">
+              <span class="chip-icon">👷</span>
+              <span class="chip-text">Estimation autoconstructeur</span>
+            </button>
+            <button class="suggestion-chip" data-message="J'ai un projet de rénovation de salle de bain au complet — plancher, vanité, plomberie. Mon budget est environ 5 000$. Est-ce que le financement est disponible?">
+              <span class="chip-icon">💰</span>
+              <span class="chip-text">Réno salle de bain + financement</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-box">
+          <input id="chat-input" type="text" placeholder="Écrivez votre message..." autocomplete="off">
+          <button id="send-btn" class="send-btn" title="Envoyer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h14M8 1l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT — Products + Services -->
+    <section id="products-panel">
+      <div class="products-header">
+        <h2 class="products-title">
+          <span id="products-title-icon">🛒</span>
+          <span id="products-title-text">Produits recommandés</span>
+        </h2>
+        <div id="products-count" class="products-count"></div>
+      </div>
+      <div id="products-grid" class="products-grid">
+        <div class="products-placeholder">
+          <div class="placeholder-icon">💬</div>
+          <p>Les produits et services recommandés apparaîtront ici</p>
+          <p class="placeholder-hint">Posez une question pour commencer</p>
+        </div>
+      </div>
+
+      <!-- Checkout overlay -->
+      <div id="checkout-panel" class="checkout-panel hidden">
+        <div class="checkout-header">
+          <h3>🛒 Résumé de commande</h3>
+        </div>
+        <div id="checkout-items" class="checkout-items"></div>
+        <div id="checkout-delivery" class="checkout-delivery hidden">
+          <div class="checkout-line"><span>🚚 Livraison</span><span id="checkout-delivery-type">Ramassage en magasin</span></div>
+        </div>
+        <div id="checkout-services-info" class="checkout-services-info hidden"></div>
+        <div class="checkout-totals">
+          <div class="checkout-line"><span>Sous-total</span><span id="checkout-subtotal">0,00 $</span></div>
+          <div class="checkout-line"><span>TPS (5%)</span><span id="checkout-tps">0,00 $</span></div>
+          <div class="checkout-line"><span>TVQ (9,975%)</span><span id="checkout-tvq">0,00 $</span></div>
+          <div class="checkout-line total"><span>Total</span><span id="checkout-total">0,00 $</span></div>
+        </div>
+        <div id="checkout-financing-info" class="checkout-financing-info hidden">
+          <div class="checkout-line"><span>💳 Financement</span><span id="checkout-financing-detail"></span></div>
+        </div>
+        <div class="checkout-actions">
+          <button id="checkout-confirm" class="btn-checkout">💳 Payer avec Stripe</button>
+        </div>
+        <div class="checkout-footer">
+          <span>Marchand : Matério — Quincaillerie, Construction et Rénovation</span><br>
+          <span style="font-size:11px;color:#666">Conforme Loi 25 Québec • Paiement sécurisé 256-bit</span>
+        </div>
+      </div>
+
+      <!-- Confirmation overlay -->
+      <div id="confirmation-panel" class="confirmation-panel hidden">
+        <div class="confirmation-content">
+          <div class="confirmation-check">✅</div>
+          <h3>Paiement complété!</h3>
+          <p id="confirmation-order-id" class="confirmation-order-id"></p>
+          <div id="confirmation-details" class="confirmation-details"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════ METRICS BAR ═══════════════ -->
+  <footer id="metrics-bar">
+    <div class="metric">
+      <span class="metric-label">Panier</span>
+      <span id="metric-cart" class="metric-value">0,00 $</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Articles</span>
+      <span id="metric-items" class="metric-value">0</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Temps</span>
+      <span id="metric-time" class="metric-value">—</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Messages</span>
+      <span id="metric-messages" class="metric-value">0</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Services</span>
+      <span id="metric-services" class="metric-value">—</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">📍 Magasin</span>
+      <span id="metric-store" class="metric-value">Saint-Jérôme</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">🚀 ROI</span>
+      <span id="metric-roi" class="metric-value">—</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/services.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

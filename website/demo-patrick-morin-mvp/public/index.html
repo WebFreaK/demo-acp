@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Patrick Morin — Assistant IA</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://patrickmorin.com/static/version1774363910/frontend/O2web/patmorin/fr_CA/images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="pm-topbar">
+    <div class="topbar-left">
+      <span>Expédition par colis gratuite dès 100$ d'achat</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-store">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Mon magasin : Laval
+      </span>
+      <a href="#">Circulaire</a>
+      <a href="#">Carrières</a>
+    </div>
+  </div>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header id="demo-header">
+    <div class="header-left">
+      <div class="pm-logo">
+        <img src="https://patrickmorin.com/static/version1774363910/frontend/O2web/patmorin/fr_CA/images/logo.svg" alt="Patrick Morin" class="pm-logo-img">
+        <span class="pm-logo-badge">Assistant IA</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="header-search">
+        <input type="text" placeholder="Rechercher un produit, une marque..." disabled>
+        <button class="header-search-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Compte</span>
+      </span>
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Favoris</span>
+      </span>
+      <span class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span>Panier</span>
+        <span id="header-cart-count" class="cart-count" style="display:none">0</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ═══════════════ NAVIGATION ═══════════════ -->
+  <nav class="pm-nav">
+    <a href="#" class="nav-promo">Promo Pratique</a>
+    <a href="#">Extérieur et jardin</a>
+    <a href="#">Matériaux de construction</a>
+    <a href="#">Plomberie</a>
+    <a href="#">Salle de bains</a>
+    <a href="#">Électricité</a>
+    <a href="#">Outils</a>
+    <a href="#">Peinture</a>
+    <a href="#">Quincaillerie</a>
+    <a href="#">Cuisine</a>
+    <a href="#">Liquidation</a>
+  </nav>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main id="demo-main">
+
+    <!-- LEFT — Chat -->
+    <section id="chat-panel">
+      <div class="chat-header">
+        <div class="chat-model-selector">
+          <span class="chat-model-icon">💬</span>
+          <span class="chat-model-name">Assistant Patrick Morin</span>
+        </div>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <!-- Suggestions starter -->
+        <div id="suggestions" class="suggestions-container">
+          <div class="suggestions-welcome">
+            <div class="welcome-icon">💬</div>
+            <h2>Comment puis-je vous aider?</h2>
+            <p>Je suis l'assistant Patrick Morin. Posez-moi vos questions sur vos projets de rénovation.</p>
+          </div>
+          <div class="suggestion-chips">
+            <button class="suggestion-chip" data-message="Je veux construire un patio en bois traité de 12×16 pieds. Quels matériaux me faut-il?">
+              <span class="chip-icon">🏡</span>
+              <span class="chip-text">Construire un patio 12×16</span>
+            </button>
+            <button class="suggestion-chip" data-message="URGENCE! J'ai un tuyau de cuivre qui fuit dans mon sous-sol. Qu'est-ce que je peux faire?">
+              <span class="chip-icon">🔧</span>
+              <span class="chip-text">Urgence plomberie</span>
+            </button>
+            <button class="suggestion-chip" data-message="Je suis entrepreneur membre PM PRO. J'ai besoin de matériaux pour une rénovation complète de salle de bain.">
+              <span class="chip-icon">👷</span>
+              <span class="chip-text">Commande PM PRO</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-box">
+          <input id="chat-input" type="text" placeholder="Écrivez votre message..." autocomplete="off">
+          <button id="send-btn" class="send-btn" title="Envoyer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h14M8 1l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT — Products -->
+    <section id="products-panel">
+      <div class="products-header">
+        <h2 class="products-title">
+          <span id="products-title-icon">🛒</span>
+          <span id="products-title-text">Produits recommandés</span>
+        </h2>
+        <div id="products-count" class="products-count"></div>
+      </div>
+      <div id="products-grid" class="products-grid">
+        <div class="products-placeholder">
+          <div class="placeholder-icon">💬</div>
+          <p>Les produits recommandés apparaîtront ici</p>
+          <p class="placeholder-hint">Posez une question pour commencer</p>
+        </div>
+      </div>
+
+      <!-- Checkout overlay -->
+      <div id="checkout-panel" class="checkout-panel hidden">
+        <div class="checkout-header">
+          <h3>🛒 Résumé de commande</h3>
+        </div>
+        <div id="checkout-items" class="checkout-items"></div>
+        <div class="checkout-totals">
+          <div class="checkout-line"><span>Sous-total</span><span id="checkout-subtotal">0,00 $</span></div>
+          <div class="checkout-line"><span>TPS (5%)</span><span id="checkout-tps">0,00 $</span></div>
+          <div class="checkout-line"><span>TVQ (9,975%)</span><span id="checkout-tvq">0,00 $</span></div>
+          <div class="checkout-line total"><span>Total</span><span id="checkout-total">0,00 $</span></div>
+        </div>
+        <div class="checkout-actions">
+          <button id="checkout-confirm" class="btn-checkout">💳 Payer avec Stripe</button>
+        </div>
+      </div>
+
+      <!-- Confirmation overlay -->
+      <div id="confirmation-panel" class="confirmation-panel hidden">
+        <div class="confirmation-content">
+          <div class="confirmation-check">✅</div>
+          <h3>Paiement complété!</h3>
+          <p id="confirmation-order-id" class="confirmation-order-id"></p>
+          <div id="confirmation-details" class="confirmation-details"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════ METRICS BAR ═══════════════ -->
+  <footer id="metrics-bar">
+    <div class="metric">
+      <span class="metric-label">Panier</span>
+      <span id="metric-cart" class="metric-value">0,00 $</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Articles</span>
+      <span id="metric-items" class="metric-value">0</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Temps</span>
+      <span id="metric-time" class="metric-value">—</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+      <span class="metric-label">Messages</span>
+      <span id="metric-messages" class="metric-value">0</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

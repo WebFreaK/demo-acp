@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement réussi — Matério</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1d1d1b; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .topbar { width: 100%; height: 36px; background: #1a1a1a; position: fixed; top: 0; }
+    .header-strip { width: 100%; height: 4px; background: #C8102E; position: fixed; top: 36px; }
+    .container { text-align: center; padding: 40px 24px; max-width: 520px; }
+    .check { font-size: 80px; margin-bottom: 24px; animation: scaleIn 0.5s ease; }
+    h1 { font-size: 28px; margin-bottom: 8px; color: #22c55e; font-weight: 700; }
+    .subtitle { color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 24px; }
+    .order-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: left; font-size: 14px; line-height: 2.2; color: #333; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .order-box strong { color: #1d1d1b; }
+    .thanks { color: #666; font-size: 16px; margin-bottom: 24px; }
+    .thanks strong { color: #C8102E; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #C8102E; text-decoration: none; font-weight: 600; font-size: 15px; padding: 10px 20px; border: 2px solid #C8102E; border-radius: 8px; transition: all 0.2s; }
+    .back-link:hover { background: #C8102E; color: #fff; }
+    .logo { font-size: 32px; font-weight: 800; color: #C8102E; margin-bottom: 32px; letter-spacing: -0.5px; }
+    @keyframes scaleIn { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <div class="header-strip"></div>
+  <div class="container">
+    <div class="logo">matério</div>
+    <div class="check">✅</div>
+    <h1>Paiement réussi!</h1>
+    <p class="subtitle">Votre commande Matério a été confirmée.</p>
+    <div class="order-box">
+      📧 Un courriel de confirmation sera envoyé sous peu.<br>
+      📍 Vos articles seront prêts pour le ramassage en magasin sous 24h.<br>
+      📞 Matério Saint-Jérôme — <strong>(450) 438-3577</strong><br>
+      🕐 lun-ven 7h30-21h, sam 8h-17h, dim 9h-17h
+    </div>
+    <p class="thanks">Merci d'avoir magasiné chez <strong>Matério</strong>! 🏠</p>
+    <a href="/" class="back-link">← Retour à l'assistant</a>
+  </div>
+</body>
+</html>
