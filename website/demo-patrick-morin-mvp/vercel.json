@@ -2,8 +2,8 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "functions": {
-    "api/chat.js": { "runtime": "@vercel/node", "maxDuration": 60 },
-    "api/checkout.js": { "runtime": "@vercel/node", "maxDuration": 15 }
+    "api/chat.js": { "maxDuration": 60 },
+    "api/checkout.js": { "maxDuration": 15 }
   },
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
