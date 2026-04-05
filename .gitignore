@@ -5,4 +5,5 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
-**/data/catalog-*.json
+# Catalog files are large (~10MB) but needed for Vercel deployment
+# **/data/catalog-*.json
