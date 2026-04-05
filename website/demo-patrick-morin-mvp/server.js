@@ -91,9 +91,11 @@ function readBody(req) {
 // ─── CATALOG LOADER ────────────────────────────────────
 
 const CATALOG_PATH = join(__dirname, 'data', 'catalog-acp.json');
+const TEMPLATES_PATH = join(__dirname, 'data', 'project-templates.json');
 let catalogData = null;
 let catalogProductMap = {};
 let VALID_IDS = new Set();
+let projectTemplates = null;
 let SYSTEM_PROMPT = '';
 
 function loadCatalog() {
@@ -155,14 +157,43 @@ function loadCatalog() {
 
 RÈGLES:
 1. Toujours répondre en français québécois, ton chaleureux et professionnel
-2. Recommander UNIQUEMENT les produits du catalogue ci-dessous (utiliser les product_id exacts = le pid)
+2. Recommander UNIQUEMENT les produits du catalogue (utiliser les product_id exacts = le pid)
 3. Calculer les quantités nécessaires quand le client décrit un projet
 4. Mentionner les prix et la disponibilité en magasin
 5. Pour les entrepreneurs PM PRO, appliquer l'escompte de 10%
 6. Taxes du Québec: TPS 5% + TVQ 9,975%
 7. TOUJOURS appeler show_products quand tu recommandes des produits spécifiques
 8. Appeler show_checkout SEULEMENT quand le client dit explicitement vouloir commander/acheter
-9. Le catalogue contient ${catalogData.products.length} produits. Tu as les ${totalSelected} plus populaires ci-dessous, répartis par catégorie.
+9. Le catalogue contient ${catalogData.products.length} produits. Utilise search_catalog pour chercher des produits.
+
+FLUX DE RECOMMANDATION PROJET:
+Quand un client décrit un projet ou demande des matériaux:
+1. IDENTIFIER le type → appeler analyze_project avec le type et les dimensions
+2. analyze_project retourne bom_summary: la liste COMPLÈTE des matériaux avec quantités DÉJÀ CALCULÉES, pid réels, et descriptions des formules
+3. Appeler show_products avec TOUS les produits retournés
+4. PRÉSENTER le bom_summary retourné par analyze_project — UTILISER les quantités du bom_summary TELLES QUELLES:
+   a) Matériaux principaux: nom, quantité du bom_summary, description de la formule, prix
+   b) Quincaillerie et fixation: idem
+   c) Accessoires et finition: idem
+   d) 🔧 Outils recommandés: REPRODUIRE EXACTEMENT le format du bom_summary avec les badges d'importance:
+      - 🔴 Essentiel = indispensable
+      - 🟡 Très utile = fortement recommandé
+      - 🟢 Recommandé = optionnel mais pratique
+      Pour chaque outil, afficher: badge + nom + prix + explication en italique. NE PAS reformater cette section en tableau.
+5. Si dimensions manquantes: poser 1-2 questions de raffinement APRÈS, pas avant.
+6. TOTALISER le montant retourné par analyze_project
+7. PROPOSER les services pertinents
+
+⛔ RÈGLE CRITIQUE QUANTITÉS:
+- Les quantités sont CALCULÉES par le serveur dans analyze_project. Ne JAMAIS recalculer toi-même.
+- Ne JAMAIS inventer tes propres formules. Utilise uniquement quantity et quantity_formula du bom_summary.
+- Les chiffres du bom_summary FONT AUTORITÉ. Ne les modifie pas, ne les arrondis pas autrement.
+❌ INTERDIT: recalculer "périmètre ÷ 1.33 = X colombages" avec tes propres chiffres
+✅ CORRECT: "**95 colombages** (périmètre ÷ 1.33 + cadrage)" — reprendre la quantité et la description du bom_summary
+
+Pour les demandes de produits spécifiques (pas un projet): utiliser search_catalog puis show_products.
+
+RÈGLE CRITIQUE: Ne JAMAIS répondre en texte seul quand le client parle d'un projet. TOUJOURS appeler analyze_project + show_products.
 
 CATALOGUE PATRICK MORIN (${totalSelected} produits populaires sur ${catalogData.products.length} total):
 ${catalogText}
@@ -173,6 +204,12 @@ Heures: lun-ven 8h-21h, sam 8h-17h, dim 9h-17h
 Dernière mise à jour du catalogue: ${catalogData.metadata?.scraped_at || 'inconnue'}`;
 
     console.log(`📦 Catalog loaded: ${catalogData.products.length} products, ${Object.keys(byCategory).length} categories`);
+
+    // Load project templates
+    if (existsSync(TEMPLATES_PATH)) {
+      projectTemplates = JSON.parse(readFileSync(TEMPLATES_PATH, 'utf-8'));
+      console.log(`📋 Project templates loaded — ${Object.keys(projectTemplates.projects).length} types`);
+    }
   } catch (err) {
     console.error('❌ Failed to load catalog:', err.message);
   }
@@ -183,6 +220,206 @@ loadCatalog();
 
 // Reload catalog every 5 minutes (picks up scraper updates)
 setInterval(loadCatalog, 5 * 60 * 1000);
+
+// ─── searchCatalogInternal (shared by analyzeProject + executeTool) ──
+
+function searchCatalogInternal(query, category) {
+  const q = (query || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const words = q.split(/\s+/).filter(w => w.length > 1 || /\d/.test(w));
+  if (!words.length || !catalogData) return [];
+
+  const catFilter = (category || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let pool = catalogData.products;
+  if (catFilter) {
+    pool = pool.filter(p => (p.category || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(catFilter));
+  }
+
+  const _txt = (p) => (p.title + ' ' + p.category + ' ' + (p.brand || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  let results = pool.filter(p => _txt(p).includes(q)).slice(0, 10);
+  if (results.length === 0) {
+    results = pool.filter(p => words.every(w => _txt(p).includes(w))).slice(0, 10);
+  }
+  if (results.length === 0 && words.length > 1) {
+    const scored = pool
+      .map(p => ({ p, score: words.filter(w => _txt(p).includes(w)).length }))
+      .filter(s => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    results = scored.map(s => s.p);
+  }
+
+  return results.map(p => ({
+    pid: p.pid,
+    title: p.title,
+    price: (p.price.amount / 100).toFixed(2) + '$',
+    price_cents: p.price.amount,
+    category: p.category,
+    brand: p.brand || ''
+  }));
+}
+
+// ─── analyzeProject (deterministic BOM generator) ──────
+
+function analyzeProject(projectType, dimensions, details) {
+  if (!projectTemplates || !catalogData) {
+    return { error: 'Templates or catalog not loaded' };
+  }
+
+  const template = projectTemplates.projects[projectType];
+  if (!template) {
+    return { error: `Unknown project type: ${projectType}`, available_types: Object.keys(projectTemplates.projects) };
+  }
+
+  let surface = 0, length = 0, width = 0, linear = 0;
+  const dimStr = (dimensions || details || '').toString();
+
+  if (template.dimension_parser.type === 'lxw') {
+    const lxwMatch = dimStr.match(/(\d+)\s*[x×X]\s*(\d+)/);
+    if (lxwMatch) {
+      length = parseInt(lxwMatch[1]);
+      width = parseInt(lxwMatch[2]);
+      surface = length * width;
+    } else {
+      surface = template.dimension_parser.fallback_surface || 100;
+      length = Math.ceil(Math.sqrt(surface * 1.33));
+      width = Math.ceil(surface / length);
+    }
+  } else if (template.dimension_parser.type === 'surface') {
+    const surfMatch = dimStr.match(/(\d[\d\s,.]*)\s*(?:pi(?:eds?)?\s*(?:carr[eé]s?|²)|pi2|pc)/i);
+    if (surfMatch) {
+      surface = parseFloat(surfMatch[1].replace(/[\s,]/g, ''));
+    } else {
+      const numMatch = dimStr.match(/(\d+)/);
+      surface = numMatch ? parseInt(numMatch[1]) : template.dimension_parser.fallback;
+    }
+    length = Math.ceil(Math.sqrt(surface));
+    width = length;
+  } else if (template.dimension_parser.type === 'linear') {
+    const linMatch = dimStr.match(/(\d+)\s*(?:pi(?:eds?)?\s*(?:lin[eé]aires?)?|')/i);
+    if (linMatch) {
+      linear = parseInt(linMatch[1]);
+    } else {
+      const numMatch = dimStr.match(/(\d+)/);
+      linear = numMatch ? parseInt(numMatch[1]) : template.dimension_parser.fallback;
+    }
+    surface = linear * 6;
+    length = linear;
+    width = 6;
+  }
+
+  const bom = { principal: [], quincaillerie: [], accessoire: [], outil: [] };
+  let totalCents = 0;
+  const allProductIds = [];
+
+  for (const cat of template.categories) {
+    const results = searchCatalogInternal(cat.search.query, cat.search.category);
+    if (results.length === 0) continue;
+
+    const bestMatch = results[0];
+
+    let quantity = 1;
+    try {
+      const formula = cat.quantity_formula;
+      if (formula.type === 'fixed') {
+        quantity = formula.quantity;
+      } else if (formula.calculate) {
+        const fn = new Function('surface', 'length', 'width', 'linear', `return ${formula.calculate};`);
+        quantity = Math.max(1, Math.round(fn(surface, length, width, linear)));
+      }
+    } catch (e) {
+      quantity = 1;
+    }
+
+    const item = {
+      product_id: bestMatch.pid,
+      title: bestMatch.title,
+      price: bestMatch.price,
+      price_cents: bestMatch.price_cents,
+      category_name: cat.name,
+      quantity,
+      quantity_formula: cat.quantity_formula.description,
+      brand: bestMatch.brand,
+      importance: cat.importance || 0,
+      importance_label: cat.importance_label || '',
+      explanation: cat.explanation || ''
+    };
+
+    totalCents += bestMatch.price_cents * quantity;
+    allProductIds.push(bestMatch.pid);
+    bom[cat.role].push(item);
+  }
+
+  const totalDollars = (totalCents / 100).toFixed(2);
+  const tps = (totalCents * 0.05 / 100).toFixed(2);
+  const tvq = (totalCents * 0.09975 / 100).toFixed(2);
+  const grandTotal = (totalCents * 1.14975 / 100).toFixed(2);
+
+  let bomText = `⚠️ DONNÉES CALCULÉES PAR LE SERVEUR — UTILISER CES QUANTITÉS EXACTES, NE PAS RECALCULER.\n\n`;
+  bomText += `## ANALYSE DE PROJET: ${template.icon} ${template.name}\n`;
+  bomText += `**Dimensions:** ${dimensions || 'estimées'}`;
+  if (template.dimension_parser.type === 'lxw') bomText += ` (longueur=${length} pi, largeur=${width} pi)`;
+  bomText += `\n`;
+  if (surface) bomText += `**Surface calculée:** ${surface} pi²\n`;
+  if (linear) bomText += `**Longueur linéaire:** ${linear} pieds\n`;
+  bomText += '\n';
+
+  const formatSection = (title, items) => {
+    if (!items.length) return '';
+    let text = `### ${title}\n`;
+    for (const item of items) {
+      text += `- **${item.category_name}**: ${item.title} — **${item.quantity}** × ${item.price} = ${(item.price_cents * item.quantity / 100).toFixed(2)}$ (${item.quantity_formula}) [pid: ${item.product_id}]\n`;
+    }
+    return text + '\n';
+  };
+
+  bomText += formatSection('Matériaux principaux', bom.principal);
+  bomText += formatSection('Quincaillerie et fixation', bom.quincaillerie);
+  bomText += formatSection('Accessoires et finition', bom.accessoire);
+  if (bom.outil.length) {
+    bomText += `### 🔧 Outils recommandés (par ordre d'importance)\n`;
+    for (const item of bom.outil) {
+      const badge = item.importance === 1 ? '🔴 Essentiel' : item.importance === 2 ? '🟡 Très utile' : '🟢 Recommandé';
+      bomText += `- **${badge}** — ${item.category_name}: ${item.title} — ${item.price} [pid: ${item.product_id}]\n`;
+      bomText += `  _${item.explanation}_\n`;
+    }
+    bomText += '\n';
+  }
+
+  bomText += `### Totaux\n`;
+  bomText += `- Sous-total: **${totalDollars}$**\n`;
+  bomText += `- TPS (5%): ${tps}$\n`;
+  bomText += `- TVQ (9,975%): ${tvq}$\n`;
+  bomText += `- **Total: ${grandTotal}$**\n`;
+
+  bomText += `\n### Questions de raffinement\n`;
+  for (const q of template.questions) {
+    bomText += `- ${q}\n`;
+  }
+  bomText += `\n⚠️ RAPPEL: Présente les quantités ci-dessus TELLES QUELLES au client. Ne recalcule pas. Cite la description entre parenthèses pour expliquer chaque quantité.\n`;
+
+  return {
+    success: true,
+    project_type: projectType,
+    project_name: template.name,
+    dimensions: { surface, length, width, linear },
+    bom_summary: bomText,
+    products: [...bom.principal, ...bom.quincaillerie, ...bom.accessoire].map(p => ({
+      product_id: p.product_id,
+      quantity: p.quantity
+    })),
+    tools: bom.outil.map(p => ({
+      product_id: p.product_id,
+      quantity: p.quantity
+    })),
+    all_product_ids: allProductIds,
+    total_before_tax: totalDollars,
+    total_with_tax: grandTotal,
+    categories_found: bom.principal.length + bom.quincaillerie.length + bom.accessoire.length + bom.outil.length,
+    categories_expected: template.categories.length,
+    message: `Projet analysé: ${template.categories.length} catégories recherchées, ${bom.principal.length + bom.quincaillerie.length + bom.accessoire.length} produits trouvés. INSTRUCTIONS: 1) Appelle show_products avec les pid ci-dessus. 2) Présente le bom_summary au client en UTILISANT LES QUANTITÉS EXACTES retournées — ne recalcule RIEN toi-même. 3) Pour chaque matériau, cite la description de formule entre parenthèses du bom_summary.`
+  };
+}
 
 const TOOLS = [
   {
@@ -206,6 +443,47 @@ const TOOLS = [
           }
         },
         required: ["products"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "analyze_project",
+      description: "Analyze a renovation/construction project and return a complete Bill of Materials (BOM) with all products and calculated quantities. Call this FIRST when a customer describes a project (toiture, terrasse, sous-sol, salle de bain, cabanon, garage, clôture, peinture). Returns products with quantities — then call show_products with the returned products.",
+      parameters: {
+        type: "object",
+        properties: {
+          project_type: {
+            type: "string",
+            enum: ["toiture", "terrasse", "sous_sol", "salle_de_bain", "cabanon", "garage", "cloture", "peinture"],
+            description: "Type of project"
+          },
+          dimensions: {
+            type: "string",
+            description: "Dimensions from the customer (e.g. '1200 pi²', '12x16 pieds', '60 pieds linéaires')"
+          },
+          details: {
+            type: "string",
+            description: "Additional project details from the customer"
+          }
+        },
+        required: ["project_type"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_catalog",
+      description: "Search the full Patrick Morin catalog. ALWAYS use this to find products before recommending them. Returns up to 10 matching products with pid, title, price, category.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search keywords in French" },
+          category: { type: "string", description: "Optional category filter to narrow results" }
+        },
+        required: ["query"]
       }
     }
   },
@@ -236,6 +514,19 @@ function executeTool(tc) {
     return { success: true, products_displayed: valid.length };
   }
   if (name === "show_checkout") return { success: true, checkout_ready: true };
+  if (name === "analyze_project") {
+    return analyzeProject(args.project_type, args.dimensions, args.details);
+  }
+  if (name === "search_catalog") {
+    const results = searchCatalogInternal(args.query, args.category);
+    return {
+      results: results.map(p => ({ pid: p.pid, title: p.title, price: p.price, category: p.category, brand: p.brand })),
+      total_found: results.length,
+      next_step: results.length > 0
+        ? `${results.length} produit(s) trouvé(s). Appelle show_products avec les pid ci-dessus.`
+        : 'Aucun résultat. Essaie avec des mots-clés différents.'
+    };
+  }
   return { error: `Unknown tool: ${name}` };
 }
 
@@ -267,38 +558,68 @@ async function handleChat(req, res) {
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const fullMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...messages.slice(-20)];
+  const trimmedMessages = messages.slice(-20);
+  const fullMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...trimmedMessages];
+
+  // Detect if last user message is about products/projects
+  const lastUserMsg = trimmedMessages.filter(m => m.role === 'user').pop()?.content || '';
+  const needsSearch = /toiture|terrasse|patio|sous-sol|salle de bain|garage|cabanon|clôture|cloture|peintur|plancher|fenêtre|porte|bardeau|bois traité|gypse|isol|plomberie|rénovation|construction|projet|je veux|je dois|refaire|construire|installer|remplacer|changer|poser|comptoir|évier|robinet|escalier|rampe|revêtement|avez-vous|cherche|besoin|matériaux|matériel|produit|combien|coût/i.test(lastUserMsg);
+  const isProjectQuery = /toiture|terrasse|patio|sous-sol|sous sol|salle de bain|garage|cabanon|remise|clôture|cloture|peintur|refaire|construire|rénover|finir|bâtir|projet/i.test(lastUserMsg);
+  console.log(`📩 User msg: "${lastUserMsg.slice(0, 80)}..." | isProjectQuery=${isProjectQuery} | needsSearch=${needsSearch}`);
 
   try {
-    // Pass 1: Stream with tools
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o", messages: fullMessages, tools: TOOLS,
-      tool_choice: "auto", stream: true, temperature: 0.7, max_tokens: 2048,
-    });
+    const MAX_ROUNDS = 8;
+    let productsShown = false;
+    let hasSearchResults = false;
+    let searchRounds = 0;
 
-    let contentBuffer = '';
-    const toolCallsMap = {};
-
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta;
-      if (!delta) continue;
-      if (delta.content) {
-        send('delta', { content: delta.content });
-        contentBuffer += delta.content;
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const isFirstRound = round === 0;
+      let toolChoice;
+      if (isFirstRound && isProjectQuery) {
+        toolChoice = { type: "function", function: { name: "analyze_project" } };
+      } else if (isFirstRound && needsSearch) {
+        toolChoice = { type: "function", function: { name: "search_catalog" } };
+      } else if (hasSearchResults && !productsShown && searchRounds >= 4) {
+        toolChoice = { type: "function", function: { name: "show_products" } };
+      } else {
+        toolChoice = "auto";
       }
-      if (delta.tool_calls) {
-        for (const tc of delta.tool_calls) {
-          const idx = tc.index;
-          if (!toolCallsMap[idx]) toolCallsMap[idx] = { id: '', type: 'function', function: { name: '', arguments: '' } };
-          if (tc.id) toolCallsMap[idx].id = tc.id;
-          if (tc.function?.name) toolCallsMap[idx].function.name = tc.function.name;
-          if (tc.function?.arguments) toolCallsMap[idx].function.arguments += tc.function.arguments;
+      const tcLabel = typeof toolChoice === 'string' ? toolChoice : `forced:${toolChoice.function.name}`;
+      console.log(`🔄 Round ${round + 1}/${MAX_ROUNDS} — tool_choice: ${tcLabel}`);
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o", messages: fullMessages, tools: TOOLS,
+        tool_choice: toolChoice,
+        stream: true, temperature: 0.4, max_tokens: 2048,
+      });
+
+      let contentBuffer = '';
+      const toolCallsMap = {};
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta;
+        if (!delta) continue;
+        if (delta.content) {
+          send('delta', { content: delta.content });
+          contentBuffer += delta.content;
+        }
+        if (delta.tool_calls) {
+          for (const tc of delta.tool_calls) {
+            const idx = tc.index;
+            if (!toolCallsMap[idx]) toolCallsMap[idx] = { id: '', type: 'function', function: { name: '', arguments: '' } };
+            if (tc.id) toolCallsMap[idx].id = tc.id;
+            if (tc.function?.name) toolCallsMap[idx].function.name = tc.function.name;
+            if (tc.function?.arguments) toolCallsMap[idx].function.arguments += tc.function.arguments;
+          }
         }
       }
-    }
 
-    const toolCalls = Object.values(toolCallsMap);
-    if (toolCalls.length > 0) {
+      const toolCalls = Object.values(toolCallsMap);
+      console.log(`🔧 Round ${round + 1}: ${toolCalls.length} tool call(s)`, toolCalls.map(t => t.function.name).join(', '));
+
+      if (toolCalls.length === 0) break;
+
       const assistantMsg = { role: "assistant", tool_calls: toolCalls };
       if (contentBuffer) assistantMsg.content = contentBuffer;
       fullMessages.push(assistantMsg);
@@ -306,22 +627,50 @@ async function handleChat(req, res) {
       for (const tc of toolCalls) {
         let args;
         try { args = JSON.parse(tc.function.arguments); } catch { args = {}; }
+
         if (tc.function.name === 'show_products' && args.products) {
-          send('products', { products: args.products.filter(p => VALID_IDS.has(p.product_id)) });
+          const validProducts = args.products.filter(p => VALID_IDS.has(p.product_id));
+          send('products', { products: validProducts });
+          productsShown = true;
         }
         if (tc.function.name === 'show_checkout') {
           send('checkout', { is_pro: args.is_pro || false, store: args.store || 'Laval', delivery_method: args.delivery_method || 'pickup' });
+          productsShown = true;
         }
-        fullMessages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(executeTool(tc)) });
+        if (tc.function.name === 'analyze_project') {
+          const projectResult = analyzeProject(args.project_type, args.dimensions, args.details);
+          if (projectResult.success) {
+            if (projectResult.products?.length) {
+              const validProducts = projectResult.products.filter(p => VALID_IDS.has(p.product_id));
+              send('products', { products: validProducts });
+            }
+            if (projectResult.tools?.length) {
+              const validTools = projectResult.tools.filter(p => VALID_IDS.has(p.product_id));
+              send('tools', { products: validTools });
+            }
+            hasSearchResults = true;
+            productsShown = true;
+          }
+        }
+        if (tc.function.name === 'search_catalog') {
+          searchRounds++;
+          const searchResult = searchCatalogInternal(args.query, args.category);
+          if (searchResult.length > 0) hasSearchResults = true;
+        }
+
+        const result = executeTool(tc);
+        fullMessages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(result) });
       }
 
-      // Pass 2: Follow-up stream
-      const followUp = await openai.chat.completions.create({
-        model: "gpt-4o", messages: fullMessages, stream: true, temperature: 0.7, max_tokens: 2048,
-      });
-      for await (const chunk of followUp) {
-        const c = chunk.choices[0]?.delta?.content;
-        if (c) send('delta', { content: c });
+      if (productsShown) {
+        const finalStream = await openai.chat.completions.create({
+          model: "gpt-4o", messages: fullMessages, stream: true, temperature: 0.4, max_tokens: 2048,
+        });
+        for await (const chunk of finalStream) {
+          const c = chunk.choices[0]?.delta?.content;
+          if (c) send('delta', { content: c });
+        }
+        break;
       }
     }
 

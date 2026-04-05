@@ -19,6 +19,7 @@ const Animations = {
       let processed = line;
       processed = processed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
       processed = processed.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+      processed = processed.replace(/(?<!\w)_([^_]+)_(?!\w)/g, '<em>$1</em>');
 
       if (processed.trim().startsWith('|') && processed.trim().endsWith('|')) {
         const cells = processed.split('|').filter(c => c.trim() !== '');
@@ -41,6 +42,12 @@ const Animations = {
 
       if (processed.trim().match(/^[•\-]\s/)) {
         html += `<p style="padding-left:12px">• ${processed.trim().replace(/^[•\-]\s*/, '')}</p>`;
+        continue;
+      }
+
+      // Indented explanation lines (tool descriptions)
+      if (line.match(/^\s{2,}/) && processed.trim()) {
+        html += `<p style="padding-left:28px;color:#666;font-style:italic;margin-top:-4px">${processed.trim()}</p>`;
         continue;
       }
 

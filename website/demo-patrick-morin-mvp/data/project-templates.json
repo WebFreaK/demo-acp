@@ -1,0 +1,1486 @@
+{
+  "projects": {
+    "toiture": {
+      "name": "Toiture (bardeaux)",
+      "icon": "🏠",
+      "dimension_parser": {
+        "type": "surface",
+        "regex": "(\\d[\\d\\s,.]*)\\s*(?:pi(?:eds?)?\\s*(?:carr[eé]s?|²)|pi2|pc)",
+        "unit": "pi²",
+        "fallback": 1000
+      },
+      "categories": [
+        {
+          "name": "Bardeaux",
+          "role": "principal",
+          "search": {
+            "query": "bardeau",
+            "category": "Bardeau"
+          },
+          "quantity_formula": {
+            "type": "shingles",
+            "description": "surface ÷ 100 = carrés × 3 = paquets + 10% pertes",
+            "calculate": "Math.ceil((surface / 100) * 3 * 1.1)"
+          }
+        },
+        {
+          "name": "Sous-couche synthétique",
+          "role": "principal",
+          "search": {
+            "query": "sous-couche",
+            "category": "Papier - Membrane"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 400,
+            "unit_name": "rouleau",
+            "waste_factor": 1,
+            "description": "surface ÷ 400 pi²/rouleau",
+            "calculate": "Math.ceil(surface / 400)"
+          }
+        },
+        {
+          "name": "Membrane autocollante",
+          "role": "principal",
+          "search": {
+            "query": "membrane autocollante",
+            "category": "Papier - Membrane"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 65,
+            "unit_name": "rouleau",
+            "waste_factor": 1,
+            "description": "~10% surface (débords/vallées) ÷ 65 pi²/rouleau",
+            "calculate": "Math.ceil((surface * 0.10) / 65)"
+          }
+        },
+        {
+          "name": "Membrane d'avant-toit",
+          "role": "principal",
+          "search": {
+            "query": "membrane avant-toit",
+            "category": "Papier"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 65,
+            "unit_name": "rouleau",
+            "description": "avant-toits (2 côtés × longueur × 3 pi) ÷ 65 pi²/rouleau",
+            "calculate": "Math.max(1, Math.ceil(2 * Math.sqrt(surface) * 3 / 65))"
+          }
+        },
+        {
+          "name": "Solin aluminium",
+          "role": "quincaillerie",
+          "search": {
+            "query": "solin"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 pièces (base)"
+          }
+        },
+        {
+          "name": "Bande de départ",
+          "role": "principal",
+          "search": {
+            "query": "bande départ",
+            "category": "Bardeau"
+          },
+          "quantity_formula": {
+            "type": "linear",
+            "description": "périmètre du toit ÷ 100 pi lin./paquet",
+            "calculate": "Math.max(2, Math.ceil(2 * (length + width) / 100))"
+          }
+        },
+        {
+          "name": "Clous à toiture",
+          "role": "quincaillerie",
+          "search": {
+            "query": "clou toiture"
+          },
+          "quantity_formula": {
+            "type": "ratio",
+            "ratio_per_unit": 320,
+            "base": "shingles_packs",
+            "unit_name": "boîte",
+            "nails_per_box": 7200,
+            "description": "~320 clous/paquet × paquets ÷ 7200/boîte",
+            "calculate": "Math.ceil(((surface / 100) * 3 * 1.1) * 320 / 7200)"
+          }
+        },
+        {
+          "name": "Évent de toit",
+          "role": "quincaillerie",
+          "search": {
+            "query": "évent toit"
+          },
+          "quantity_formula": {
+            "type": "ratio",
+            "description": "1 évent par 300 pi²",
+            "calculate": "Math.max(1, Math.ceil(surface / 300))"
+          }
+        },
+        {
+          "name": "Scellant toiture",
+          "role": "accessoire",
+          "search": {
+            "query": "scellant toiture"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 tube"
+          }
+        },
+        {
+          "name": "Faîtière",
+          "role": "principal",
+          "search": {
+            "query": "faîtière",
+            "category": "Bardeau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 paquets (base)"
+          }
+        },
+        {
+          "name": "Cloueuse à toiture",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Cloueuse pneumatique ou sans fil pour fixer les bardeaux rapidement et uniformément. Indispensable pour un résultat professionnel.",
+          "search": {
+            "query": "cloueuse toiture",
+            "category": "Cloueuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 cloueuse à toiture"
+          }
+        },
+        {
+          "name": "Pelle à bardeaux",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Indispensable pour arracher les anciens bardeaux avant la pose. Accélère le travail de démolition de 3-4x vs un grattoir standard.",
+          "search": {
+            "query": "pelle bardeaux",
+            "category": "bardeau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 pelle à bardeaux"
+          }
+        },
+        {
+          "name": "Kit antichute de couvreur",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Harnais, ligne de vie et ancrage — obligatoire pour tout travail en hauteur. Sécurité non négociable.",
+          "search": {
+            "query": "antichute couvreur",
+            "category": "Équipement"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 kit antichute"
+          }
+        },
+        {
+          "name": "Marteau à bardeaux",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Marteau spécialisé pour couper et clouer les bardeaux d'asphalte. Outil #1 du couvreur.",
+          "search": {
+            "query": "marteau bardeaux",
+            "category": "Marteau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 marteau à bardeaux"
+          }
+        },
+        {
+          "name": "Couteau utilitaire",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour couper les bardeaux aux dimensions, tailler la membrane et le papier goudronné avec précision.",
+          "search": {
+            "query": "couteau utilitaire",
+            "category": "Couteaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 couteau utilitaire"
+          }
+        },
+        {
+          "name": "Barre à clous",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour retirer les clous restants après l'arrachage et soulever les bardeaux endommagés.",
+          "search": {
+            "query": "barre",
+            "category": "Barre"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 barre à clous"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer les distances, aligner les rangées de bardeaux et calculer les coupes.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Superficie du toit?",
+        "Pente?",
+        "Nombre de couches existantes?",
+        "Cheminée/évent?"
+      ]
+    },
+    "terrasse": {
+      "name": "Terrasse / Patio",
+      "icon": "🪵",
+      "dimension_parser": {
+        "type": "lxw",
+        "regex": "(\\d+)\\s*[x×X]\\s*(\\d+)",
+        "unit": "pieds",
+        "fallback_surface": 192
+      },
+      "categories": [
+        {
+          "name": "Madriers de structure (solives)",
+          "role": "principal",
+          "search": {
+            "query": "2 po x 8",
+            "category": "Bois traité brun"
+          },
+          "quantity_formula": {
+            "type": "joists",
+            "description": "longueur ÷ 1.33 (16\" c/c) + 1 solives + 2 poutres",
+            "calculate": "Math.ceil(length / 1.33) + 1 + 2"
+          }
+        },
+        {
+          "name": "Platelage composite ou cèdre",
+          "role": "principal",
+          "search": {
+            "query": "composite",
+            "category": "Composite"
+          },
+          "quantity_formula": {
+            "type": "decking",
+            "description": "surface ÷ 5.5 pi²/planche 12'",
+            "calculate": "Math.ceil(surface / 5.5)"
+          }
+        },
+        {
+          "name": "Poteaux 6×6",
+          "role": "principal",
+          "search": {
+            "query": "poteau 6",
+            "category": "Bois traité brun"
+          },
+          "quantity_formula": {
+            "type": "posts",
+            "description": "1 poteau par 6' de poutre + coins",
+            "calculate": "Math.max(4, Math.ceil(length / 6) + 1)"
+          }
+        },
+        {
+          "name": "Vis à terrasse",
+          "role": "quincaillerie",
+          "search": {
+            "query": "vis terrasse"
+          },
+          "quantity_formula": {
+            "type": "screws",
+            "description": "~350 vis par 100 pi² de platelage",
+            "calculate": "Math.ceil(surface / 100) * 350"
+          }
+        },
+        {
+          "name": "Ancrages de poteaux",
+          "role": "quincaillerie",
+          "search": {
+            "query": "ancrage sol"
+          },
+          "quantity_formula": {
+            "type": "match_posts",
+            "description": "1 par poteau",
+            "calculate": "Math.max(4, Math.ceil(length / 6) + 1)"
+          }
+        },
+        {
+          "name": "Équerres de solive",
+          "role": "quincaillerie",
+          "search": {
+            "query": "équerre solive"
+          },
+          "quantity_formula": {
+            "type": "match_joists",
+            "description": "2 par solive (gauche + droite)",
+            "calculate": "(Math.ceil(length / 1.33) + 1) * 2"
+          }
+        },
+        {
+          "name": "Teinture extérieur",
+          "role": "accessoire",
+          "search": {
+            "query": "teinture",
+            "category": "Teinture et vernis"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 250,
+            "unit_name": "gallon",
+            "waste_factor": 1,
+            "description": "surface ÷ 250 pi²/gallon (2 couches: ×2)",
+            "calculate": "Math.ceil(surface / 250 * 2)"
+          }
+        },
+        {
+          "name": "Solin contre la maison",
+          "role": "accessoire",
+          "search": {
+            "query": "solin"
+          },
+          "quantity_formula": {
+            "type": "linear",
+            "description": "1 pièce par 10' de mur adjacent",
+            "calculate": "Math.max(1, Math.ceil(width / 10))"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Essentielle pour visser les planches de platelage, fixer les solives et assembler la structure.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Scie circulaire",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour couper les madriers de structure, les planches de platelage et les poteaux aux bonnes dimensions.",
+          "search": {
+            "query": "scie circulaire",
+            "category": "Scie circulaire"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 scie circulaire"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour vérifier l'aplomb des poteaux et le niveau des solives. Une terrasse mal nivelée accumule l'eau.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer et marquer l'espacement des solives (16\" c/c) et la longueur des planches.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Dimensions?",
+        "Hauteur du sol?",
+        "Garde-corps requis?",
+        "Escalier?"
+      ]
+    },
+    "sous_sol": {
+      "name": "Sous-sol / Finition",
+      "icon": "🧱",
+      "dimension_parser": {
+        "type": "surface",
+        "regex": "(\\d[\\d\\s,.]*)\\s*(?:pi(?:eds?)?\\s*(?:carr[eé]s?|²)|pi2|pc)",
+        "unit": "pi²",
+        "fallback": 600
+      },
+      "categories": [
+        {
+          "name": "Colombages 2×4 ou 2×3",
+          "role": "principal",
+          "search": {
+            "query": "2 po x 3",
+            "category": "Épinette"
+          },
+          "quantity_formula": {
+            "type": "studs",
+            "description": "périmètre ÷ 1.33 (16\" c/c) + cadrage portes",
+            "calculate": "Math.ceil(Math.sqrt(surface) * 4 / 1.33) + 10"
+          }
+        },
+        {
+          "name": "Isolant (panneaux ou laine)",
+          "role": "principal",
+          "search": {
+            "query": "isolant",
+            "category": "Isolation"
+          },
+          "quantity_formula": {
+            "type": "wall_coverage",
+            "description": "périmètre × hauteur (8') = surface murs",
+            "calculate": "Math.ceil(Math.sqrt(surface) * 4 * 8 / 40)"
+          }
+        },
+        {
+          "name": "Gypse ½\"",
+          "role": "principal",
+          "search": {
+            "query": "panneau cloison"
+          },
+          "quantity_formula": {
+            "type": "wall_coverage",
+            "description": "(périmètre × hauteur) ÷ 32 pi²/feuille + 10%",
+            "calculate": "Math.ceil(Math.sqrt(surface) * 4 * 8 / 32 * 1.1)"
+          }
+        },
+        {
+          "name": "Vis à gypse",
+          "role": "quincaillerie",
+          "search": {
+            "query": "vis gypse"
+          },
+          "quantity_formula": {
+            "type": "ratio",
+            "description": "~300 vis par 1000 pi² de gypse",
+            "calculate": "Math.ceil(Math.sqrt(surface) * 4 * 8 * 300 / 1000)"
+          }
+        },
+        {
+          "name": "Ruban à joints / composé",
+          "role": "quincaillerie",
+          "search": {
+            "query": "composé joints"
+          },
+          "quantity_formula": {
+            "type": "ratio",
+            "description": "1 seau par 20 feuilles de gypse",
+            "calculate": "Math.max(1, Math.ceil(Math.sqrt(surface) * 4 * 8 / 32 / 20))"
+          }
+        },
+        {
+          "name": "Pare-vapeur polyéthylène 6 mil",
+          "role": "quincaillerie",
+          "search": {
+            "query": "pare-vapeur polyéthylène"
+          },
+          "quantity_formula": {
+            "type": "wall_coverage",
+            "description": "surface murs ÷ couverture rouleau",
+            "calculate": "Math.max(1, Math.ceil(Math.sqrt(surface) * 4 * 8 / 500))"
+          }
+        },
+        {
+          "name": "Plancher flottant / sous-couche",
+          "role": "accessoire",
+          "search": {
+            "query": "plancher",
+            "category": "Stratifié"
+          },
+          "quantity_formula": {
+            "type": "floor_coverage",
+            "description": "surface × 1.10 (10% pertes)",
+            "calculate": "Math.ceil(surface * 1.1 / 20)"
+          }
+        },
+        {
+          "name": "Fourrures 1×3",
+          "role": "principal",
+          "search": {
+            "query": "1 po x 3",
+            "category": "Épinette"
+          },
+          "quantity_formula": {
+            "type": "ceiling",
+            "description": "surface plafond ÷ espacement 12\" × longueur",
+            "calculate": "Math.ceil(Math.sqrt(surface) / 1)"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour fixer les fourrures au béton, visser le gypse et installer les cadres de porte.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Couteau utilitaire",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour couper les panneaux de gypse, l'isolant rigide et le pare-vapeur avec précision.",
+          "search": {
+            "query": "couteau utilitaire",
+            "category": "Couteaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 couteau utilitaire"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour assurer la verticalité des murs de fourrure et l'horizontalité du plafond suspendu.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer les murs, marquer l'espacement des fourrures et dimensionner les panneaux.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Dimensions?",
+        "Hauteur libre?",
+        "Humidité?",
+        "Fenêtres existantes?"
+      ]
+    },
+    "salle_de_bain": {
+      "name": "Salle de bain",
+      "icon": "🚿",
+      "dimension_parser": {
+        "type": "lxw",
+        "regex": "(\\d+)\\s*[x×X]\\s*(\\d+)",
+        "unit": "pieds",
+        "fallback_surface": 40
+      },
+      "categories": [
+        {
+          "name": "Céramique / porcelaine",
+          "role": "principal",
+          "search": {
+            "query": "tuile céramique",
+            "category": "Céramique et porcelaine"
+          },
+          "quantity_formula": {
+            "type": "tile",
+            "description": "surface douche (murs + plancher) × 1.15 pertes",
+            "calculate": "Math.ceil((surface * 3 + surface) * 1.15 / 10)"
+          }
+        },
+        {
+          "name": "Mortier-colle",
+          "role": "principal",
+          "search": {
+            "query": "ciment-colle"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 50,
+            "unit_name": "sac",
+            "description": "surface totale carrelage ÷ 50 pi²/sac",
+            "calculate": "Math.ceil((surface * 3 + surface) / 50)"
+          }
+        },
+        {
+          "name": "Coulis",
+          "role": "principal",
+          "search": {
+            "query": "coulis alpha"
+          },
+          "quantity_formula": {
+            "type": "ratio",
+            "description": "1 sac par 50-80 pi² selon joints",
+            "calculate": "Math.max(1, Math.ceil((surface * 3 + surface) / 60))"
+          }
+        },
+        {
+          "name": "Membrane d'étanchéité douche",
+          "role": "principal",
+          "search": {
+            "query": "membrane douche"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 54,
+            "unit_name": "rouleau",
+            "description": "murs douche ÷ 54 pi²/rouleau",
+            "calculate": "Math.max(1, Math.ceil(surface * 3 / 54))"
+          }
+        },
+        {
+          "name": "Panneau ciment (Durock)",
+          "role": "principal",
+          "search": {
+            "query": "panneau cloison"
+          },
+          "quantity_formula": {
+            "type": "wall_coverage",
+            "description": "murs douche ÷ 32 pi²/panneau",
+            "calculate": "Math.max(1, Math.ceil(surface * 3 / 32))"
+          }
+        },
+        {
+          "name": "Vanité",
+          "role": "principal",
+          "search": {
+            "query": "vanité"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 vanité"
+          }
+        },
+        {
+          "name": "Robinetterie",
+          "role": "quincaillerie",
+          "search": {
+            "query": "robinet",
+            "category": "Cuisine et salle de bain"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 robinet"
+          }
+        },
+        {
+          "name": "Silicone plomberie",
+          "role": "quincaillerie",
+          "search": {
+            "query": "silicone salle bain"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 tubes"
+          }
+        },
+        {
+          "name": "Croisillons",
+          "role": "accessoire",
+          "search": {
+            "query": "croisillons"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 sac"
+          }
+        },
+        {
+          "name": "Truelle dentelée",
+          "role": "accessoire",
+          "search": {
+            "query": "truelle dentelée"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 truelle"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour fixer la vanité, installer le support de céramique et monter les accessoires muraux.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Critique pour poser la céramique droite, aligner la vanité et vérifier la pente du plancher de douche.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour mesurer les surfaces de céramique, centrer la vanité et calculer les coupes de carrelage.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Douche ou bain?",
+        "Dimensions pièce?",
+        "Ventilation existante?"
+      ]
+    },
+    "cabanon": {
+      "name": "Cabanon / Remise",
+      "icon": "🏗️",
+      "dimension_parser": {
+        "type": "lxw",
+        "regex": "(\\d+)\\s*[x×X]\\s*(\\d+)",
+        "unit": "pieds",
+        "fallback_surface": 120
+      },
+      "categories": [
+        {
+          "name": "Colombages 2×4",
+          "role": "principal",
+          "search": {
+            "query": "2 po x 4",
+            "category": "Épinette"
+          },
+          "quantity_formula": {
+            "type": "studs_perimeter",
+            "description": "périmètre × 2 (double mur) ÷ 1.33 + cadrage",
+            "calculate": "Math.ceil((length + width) * 2 / 1.33) + 12"
+          }
+        },
+        {
+          "name": "Contreplaqué OSB revêtement",
+          "role": "principal",
+          "search": {
+            "query": "contreplaqué",
+            "category": "Contreplaqué"
+          },
+          "quantity_formula": {
+            "type": "wall_sheets",
+            "description": "périmètre × hauteur(8') ÷ 32 + toit",
+            "calculate": "Math.ceil(((length + width) * 2 * 8 + surface * 1.1) / 32)"
+          }
+        },
+        {
+          "name": "Bardeaux toiture",
+          "role": "principal",
+          "search": {
+            "query": "bardeau",
+            "category": "Bardeau"
+          },
+          "quantity_formula": {
+            "type": "shingles",
+            "description": "surface toit (surface × 1.1 pour pente) ÷ 100 × 3 + 10%",
+            "calculate": "Math.ceil((surface * 1.1 / 100) * 3 * 1.1)"
+          }
+        },
+        {
+          "name": "Membrane / papier toiture",
+          "role": "principal",
+          "search": {
+            "query": "sous-couche",
+            "category": "Papier - Membrane"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 400,
+            "unit_name": "rouleau",
+            "description": "surface toit ÷ 400",
+            "calculate": "Math.max(1, Math.ceil(surface * 1.1 / 400))"
+          }
+        },
+        {
+          "name": "Vis de construction",
+          "role": "quincaillerie",
+          "search": {
+            "query": "vis construction",
+            "category": "Bois et charpente"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 boîtes"
+          }
+        },
+        {
+          "name": "Équerres de charpente",
+          "role": "quincaillerie",
+          "search": {
+            "query": "équerre charpente"
+          },
+          "quantity_formula": {
+            "type": "per_corner",
+            "description": "~20 équerres (coins + solives + fermes)",
+            "calculate": "20"
+          }
+        },
+        {
+          "name": "Porte de cabanon",
+          "role": "accessoire",
+          "search": {
+            "query": "porte cabanon"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 porte"
+          }
+        },
+        {
+          "name": "Clous charpente",
+          "role": "quincaillerie",
+          "search": {
+            "query": "clou charpente"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 boîtes"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour assembler la structure, fixer le revêtement extérieur et installer les charnières de porte.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Scie circulaire",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour couper le bois de charpente, le contreplaqué et les planches de revêtement aux dimensions.",
+          "search": {
+            "query": "scie circulaire",
+            "category": "Scie circulaire"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 scie circulaire"
+          }
+        },
+        {
+          "name": "Marteau de charpentier",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour clouer la charpente, poser le contreplaqué de toit et assembler les fermes.",
+          "search": {
+            "query": "marteau",
+            "category": "Marteau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 marteau de charpentier"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour vérifier l'aplomb des murs, le niveau de la base et l'alignement du toit.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer la charpente, calculer les angles de toit et marquer les coupes.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Dimensions?",
+        "Permis municipal?",
+        "Fondation souhaitée?"
+      ]
+    },
+    "garage": {
+      "name": "Garage",
+      "icon": "🏗️",
+      "dimension_parser": {
+        "type": "lxw",
+        "regex": "(\\d+)\\s*[x×X]\\s*(\\d+)",
+        "unit": "pieds",
+        "fallback_surface": 576
+      },
+      "categories": [
+        {
+          "name": "Colombages 2×6 (murs)",
+          "role": "principal",
+          "search": {
+            "query": "2 po x 6",
+            "category": "Épinette"
+          },
+          "quantity_formula": {
+            "type": "studs_perimeter",
+            "description": "périmètre ÷ 1.33 + cadrage",
+            "calculate": "Math.ceil((length + width) * 2 / 1.33) + 16"
+          }
+        },
+        {
+          "name": "Contreplaqué / OSB",
+          "role": "principal",
+          "search": {
+            "query": "contreplaqué",
+            "category": "Contreplaqué"
+          },
+          "quantity_formula": {
+            "type": "wall_sheets",
+            "description": "périmètre × hauteur(9') ÷ 32 + toit",
+            "calculate": "Math.ceil(((length + width) * 2 * 9 + surface * 1.1) / 32)"
+          }
+        },
+        {
+          "name": "Bardeaux toiture",
+          "role": "principal",
+          "search": {
+            "query": "bardeau",
+            "category": "Bardeau"
+          },
+          "quantity_formula": {
+            "type": "shingles",
+            "description": "surface toit ÷ 100 × 3 + 10%",
+            "calculate": "Math.ceil((surface * 1.1 / 100) * 3 * 1.1)"
+          }
+        },
+        {
+          "name": "Membrane / sous-couche toiture",
+          "role": "principal",
+          "search": {
+            "query": "sous-couche",
+            "category": "Papier - Membrane"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 400,
+            "unit_name": "rouleau",
+            "description": "surface toit ÷ 400",
+            "calculate": "Math.max(1, Math.ceil(surface * 1.1 / 400))"
+          }
+        },
+        {
+          "name": "Porte de garage",
+          "role": "principal",
+          "search": {
+            "query": "porte garage"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 porte sectionnelle"
+          }
+        },
+        {
+          "name": "Vis de construction",
+          "role": "quincaillerie",
+          "search": {
+            "query": "vis construction"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 3,
+            "description": "3 boîtes"
+          }
+        },
+        {
+          "name": "Ancrages Simpson",
+          "role": "quincaillerie",
+          "search": {
+            "query": "ancrage"
+          },
+          "quantity_formula": {
+            "type": "per_post",
+            "description": "1 par poteau/coin",
+            "calculate": "Math.ceil((length + width) * 2 / 8) + 4"
+          }
+        },
+        {
+          "name": "Isolant (si chauffé)",
+          "role": "accessoire",
+          "search": {
+            "query": "isolant",
+            "category": "Isolation"
+          },
+          "quantity_formula": {
+            "type": "wall_coverage",
+            "description": "périmètre × hauteur ÷ couverture/rouleau",
+            "calculate": "Math.ceil((length + width) * 2 * 9 / 40)"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour assembler la charpente, fixer le revêtement et installer la quincaillerie de porte de garage.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Scie circulaire",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour couper les colombages, le contreplaqué OSB et les chevrons aux dimensions requises.",
+          "search": {
+            "query": "scie circulaire",
+            "category": "Scie circulaire"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 scie circulaire"
+          }
+        },
+        {
+          "name": "Marteau de charpentier",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour clouer la charpente murale, poser le revêtement de toit et assembler les fermes.",
+          "search": {
+            "query": "marteau",
+            "category": "Marteau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 marteau de charpentier"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour vérifier l'aplomb des murs, le niveau de la dalle et l'alignement de la porte de garage.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer les murs, calculer l'espacement des colombages (16\" c/c) et vérifier les diagonales.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Dimensions?",
+        "Chauffé ou non?",
+        "Nombre de portes de garage?",
+        "Fondation déjà coulée?"
+      ]
+    },
+    "cloture": {
+      "name": "Clôture",
+      "icon": "🪜",
+      "dimension_parser": {
+        "type": "linear",
+        "regex": "(\\d+)\\s*(?:pi(?:eds?)?\\s*(?:lin[eé]aires?)?|')",
+        "unit": "pieds linéaires",
+        "fallback": 60
+      },
+      "categories": [
+        {
+          "name": "Poteaux 4×4 traités",
+          "role": "principal",
+          "search": {
+            "query": "poteau 4",
+            "category": "Bois traité brun"
+          },
+          "quantity_formula": {
+            "type": "fence_posts",
+            "description": "1 poteau par 8' + 1",
+            "calculate": "Math.ceil(linear / 8) + 1"
+          }
+        },
+        {
+          "name": "Traverses 2×4 traités",
+          "role": "principal",
+          "search": {
+            "query": "2 po x 4",
+            "category": "Bois traité brun"
+          },
+          "quantity_formula": {
+            "type": "rails",
+            "description": "2 traverses par section × sections",
+            "calculate": "Math.ceil(linear / 8) * 2"
+          }
+        },
+        {
+          "name": "Planches de clôture 1×6 ou 5/4",
+          "role": "principal",
+          "search": {
+            "query": "planche clôture"
+          },
+          "quantity_formula": {
+            "type": "fence_boards",
+            "description": "longueur ÷ 5.5\" par planche",
+            "calculate": "Math.ceil(linear * 12 / 5.5)"
+          }
+        },
+        {
+          "name": "Vis extérieur inox",
+          "role": "quincaillerie",
+          "search": {
+            "query": "vis extérieur"
+          },
+          "quantity_formula": {
+            "type": "screws_fence",
+            "description": "~6 vis par planche",
+            "calculate": "Math.ceil(linear * 12 / 5.5 * 6)"
+          }
+        },
+        {
+          "name": "Teinture extérieur",
+          "role": "accessoire",
+          "search": {
+            "query": "teinture",
+            "category": "Teinture et vernis"
+          },
+          "quantity_formula": {
+            "type": "coverage",
+            "coverage_per_unit": 250,
+            "unit_name": "gallon",
+            "description": "linéaire × hauteur(6') × 2 côtés ÷ 250 pi²/gal × 2 couches",
+            "calculate": "Math.ceil(linear * 6 * 2 / 250 * 2)"
+          }
+        },
+        {
+          "name": "Perceuse-visseuse",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour visser les planches sur les traverses et fixer les supports de poteau.",
+          "search": {
+            "query": "perceuse visseuse",
+            "category": "Perceuse"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 perceuse-visseuse"
+          }
+        },
+        {
+          "name": "Scie circulaire",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour couper les planches de clôture et les traverses aux bonnes longueurs.",
+          "search": {
+            "query": "scie circulaire",
+            "category": "Scie circulaire"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 scie circulaire"
+          }
+        },
+        {
+          "name": "Niveau",
+          "role": "outil",
+          "importance": 2,
+          "importance_label": "Très utile",
+          "explanation": "Pour vérifier l'aplomb de chaque poteau — un poteau croche donne une clôture croche.",
+          "search": {
+            "query": "niveau",
+            "category": "Niveaux"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 niveau"
+          }
+        },
+        {
+          "name": "Ruban à mesurer",
+          "role": "outil",
+          "importance": 3,
+          "importance_label": "Recommandé",
+          "explanation": "Pour mesurer l'espacement des poteaux (8' c/c) et la hauteur des planches.",
+          "search": {
+            "query": "ruban a mesurer",
+            "category": "Ruban a mesurer"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 ruban à mesurer"
+          }
+        }
+      ],
+      "questions": [
+        "Longueur linéaire?",
+        "Hauteur?",
+        "Style (fermée, ajourée)?",
+        "Portail?"
+      ]
+    },
+    "peinture": {
+      "name": "Peinture intérieure",
+      "icon": "🎨",
+      "dimension_parser": {
+        "type": "surface",
+        "regex": "(\\d[\\d\\s,.]*)\\s*(?:pi(?:eds?)?\\s*(?:carr[eé]s?|²)|pi2|pc)",
+        "unit": "pi²",
+        "fallback": 800
+      },
+      "categories": [
+        {
+          "name": "Peinture latex acrylique",
+          "role": "principal",
+          "search": {
+            "query": "peinture interieure",
+            "category": "Peinture intérieure"
+          },
+          "quantity_formula": {
+            "type": "paint",
+            "description": "surface ÷ 375 pi²/gallon × 2 couches",
+            "calculate": "Math.ceil(surface / 375 * 2)"
+          }
+        },
+        {
+          "name": "Apprêt / primer",
+          "role": "principal",
+          "search": {
+            "query": "apprêt"
+          },
+          "quantity_formula": {
+            "type": "paint",
+            "description": "surface ÷ 400 pi²/gallon × 1 couche",
+            "calculate": "Math.ceil(surface / 400)"
+          }
+        },
+        {
+          "name": "Rouleau 10\"",
+          "role": "quincaillerie",
+          "search": {
+            "query": "armature rouleau"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 rouleaux + manchons"
+          }
+        },
+        {
+          "name": "Pinceau angulaire",
+          "role": "quincaillerie",
+          "search": {
+            "query": "pinceau angulaire"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 2,
+            "description": "2 pinceaux (2\" + angulaire)"
+          }
+        },
+        {
+          "name": "Ruban de peintre",
+          "role": "quincaillerie",
+          "search": {
+            "query": "ruban masquer"
+          },
+          "quantity_formula": {
+            "type": "tape",
+            "description": "~1 rouleau par 200 pi²",
+            "calculate": "Math.max(1, Math.ceil(surface / 200))"
+          }
+        },
+        {
+          "name": "Bâche de protection",
+          "role": "accessoire",
+          "search": {
+            "query": "toile protection",
+            "category": "Accessoires et outils"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 bâche"
+          }
+        },
+        {
+          "name": "Escabeau",
+          "role": "outil",
+          "importance": 1,
+          "importance_label": "Essentiel",
+          "explanation": "Pour atteindre le haut des murs et le plafond en toute sécurité. Essentiel pour une finition uniforme.",
+          "search": {
+            "query": "escabeau",
+            "category": "chelles"
+          },
+          "quantity_formula": {
+            "type": "fixed",
+            "quantity": 1,
+            "description": "1 escabeau"
+          }
+        }
+      ],
+      "questions": [
+        "Nombre de pièces?",
+        "Superficie murs?",
+        "Type de surface?",
+        "Couleur actuelle?"
+      ]
+    }
+  }
+}

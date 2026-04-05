@@ -1,6 +1,7 @@
 # Spécification et plan d'implémentation — Démo Matério
 
 **Date :** 2 avril 2026  
+**Statut :** ✅ MVP entièrement construit et fonctionnel (3 avril 2026)  
 **Document :** Spécification technique détaillée et plan d'exécution pas à pas  
 **Référence :** analyse-demo-materio.md
 
@@ -64,13 +65,14 @@ Convaincre la direction de Matério de signer un contrat d'intégration ACP / Ch
 │  ┌─────────────────┐    ┌──────────────────────────────────┐ │
 │  │  Panel gauche    │    │    Panel droit                    │ │
 │  │                  │    │                                   │ │
-│  │  Chat GPT-4o     │    │  Fiches produits Matério          │ │
+│  │  Chat GPT-4o-mini │    │  Fiches produits Matério          │ │
 │  │  (IA réelle)     │    │  (images réelles,                 │ │
 │  │                  │    │   prix, stock, magasin)           │ │
 │  │  Conversation    │◄──►│  Mise à jour dynamique            │ │
 │  │  temps réel      │    │  via function calling             │ │
 │  │  SSE streaming   │    │  (show_products, show_services,   │ │
-│  │                  │    │   show_checkout, show_financing)  │ │
+│  │                  │    │   show_checkout, show_financing,  │ │
+│  │                  │    │   show_estimation, search_catalog)│ │
 │  └─────────────────┘    └──────────────────────────────────┘ │
 │                                                              │
 │  ┌─────────────────────────────────────────────────────────┐ │
@@ -82,16 +84,16 @@ Convaincre la direction de Matério de signer un contrat d'intégration ACP / Ch
              │                          │
              ▼                          ▼
  ┌──────────────────────┐  ┌────────────────────┐
- │   OpenAI GPT-4o API    │  │  Stripe Checkout    │
+ │   OpenAI GPT-4o-mini  │  │  Stripe Checkout    │
  │   (function calling)  │  │  (paiement réel)    │
  └──────────────────────┘  └────────────────────┘
                           │
                           ▼
               ┌──────────────────────┐
               │   Données produits    │
-              │   (Magento 2 scrape   │
-              │   ou REST API)        │
-              │   ~10 000+ vrais      │
+              │   (Magento 2 3-tier   │
+              │   REST→GraphQL→HTML)  │
+              │   6 978 vrais         │
               │   produits Matério    │
               │   + 6 magasins        │
               └──────────────────────┘
@@ -102,19 +104,19 @@ Convaincre la direction de Matério de signer un contrat d'intégration ACP / Ch
 | Composant | Technologie | Justification |
 |---|---|---|
 | **Application démo** | Node.js + HTML/CSS/JS vanilla | Réutilisation du template Patrick Morin éprouvé, adapté pour Matério |
-| **Données produits** | JSON dynamique (`catalog-materio.json`) | Extrait via scraping Magento 2 (REST API ou HTML), rafraîchissement périodique |
-| **Chat IA** | OpenAI GPT-4o avec function calling + SSE streaming | Conversations en temps réel, recommandation de produits + services |
+| **Données produits** | JSON dynamique (`catalog-materio.json`, 6 978 produits) | Extrait via scraper Magento 2 3-tier (REST API → GraphQL → HTML fallback), sélection subcatégorielle (top 1 par sous-catégorie L2 = ~200-300 produits dans le prompt) |
+| **Chat IA** | OpenAI GPT-4o-mini avec function calling + SSE streaming (temp 0.4, max_tokens 2048) | Conversations en temps réel, 6 tools IA : show_products, show_services, show_checkout, show_financing, show_estimation, search_catalog |
 | **Paiement** | Stripe Checkout (réel) | Checkout fonctionnel avec taxes QC et calcul financement |
 | **Animations** | CSS transitions + JS requestAnimationFrame | Streaming token-by-token, cascade de cartes produits |
 | **Images produits** | URLs Magento 2 (images hébergées sur materio.ca) | Vrais visuels = crédibilité |
 | **Hébergement** | Vercel (Serverless Functions) | Déploiement serverless pour les API endpoints |
-| **Scraper** | Node.js + Magento 2 REST API / HTML scraping | Extraction du catalogue complet |
+| **Scraper** | Node.js + Magento 2 3-tier (REST API → GraphQL → HTML/Cheerio) | Extraction automatisée — 6 978 produits en 165.5s |
 
 ### 2.3 Différences clés vs. démo Patrick Morin
 
 | Aspect | Patrick Morin | Matério | Impact technique |
 |---|---|---|---|
-| **Source de données** | API Bloomreach Discovery | Magento 2 natif (REST API ou HTML scraping) | Scraper différent à développer |
+| **Source de données** | API Bloomreach Discovery | Magento 2 natif (3-tier: REST API → GraphQL → HTML scraping) | Scraper différent développé |
 | **Magasins** | 23 succursales | 6 succursales | Complexité réduite sur le stock multi-magasins |
 | **Services intégrés** | Non (seulement produits + checkout) | Oui : coupe, estimation, livraison, financement | **4 nouvelles fonctions** à implémenter |
 | **Programme B2B** | PM PRO (escompte 10%) | Compte charge/comptant (autoconstructeurs/entrepreneurs) | Logique de facturation au compte |
@@ -130,15 +132,15 @@ demo-materio-mvp/
 ├── vercel.json            # Config déploiement Vercel (serverless)
 ├── .env.example           # Template variables d'environnement
 ├── api/
-│   ├── chat.js           # OpenAI GPT-4o streaming + function calling
+│   ├── chat.js           # OpenAI GPT-4o-mini streaming + function calling (6 tools)
 │   │                     # Functions: show_products, show_services, 
 │   │                     #            show_checkout, show_financing,
-│   │                     #            show_estimation
+│   │                     #            show_estimation, search_catalog
 │   └── checkout.js       # Stripe Checkout Session (Vercel)
 ├── data/
-│   ├── catalog-materio.json  # Catalogue ~10 000+ produits (scraping Magento 2)
+│   ├── catalog-materio.json  # Catalogue 6 978 produits (Magento 2 GraphQL)
 │   ├── stores.json           # 6 magasins avec coordonnées et services
-│   └── services.json         # Définition des services (coupe, livraison, financement)
+│   └── services.json         # 6 services + plans de financement
 ├── public/
 │   ├── index.html       # Interface split-screen (Chat + produits + services)
 │   ├── success.html     # Page post-paiement Stripe
@@ -154,9 +156,10 @@ demo-materio-mvp/
 │       └── images/
 │           └── products/  # Images produits locales (si nécessaire)
 ├── scraper/
-│   ├── index.js         # Scraper Magento 2 REST API
-│   ├── html-fallback.js # Scraper HTML fallback si API REST inaccessible
-│   └── cron.js          # Planificateur de rafraîchissement
+│   ├── index.js         # Scraper Magento 2 3-tier (REST → GraphQL → HTML)
+│   ├── html-fallback.js # Scraper HTML fallback (Cheerio) — 10 catégories
+│   ├── cron.js          # Planificateur horaire (60 min)
+│   └── test-availability.js  # Test de disponibilité des APIs
 └── docs/
     ├── proposition.md   # Proposition commerciale
     └── one-pager.md     # Résumé 1 page
@@ -168,9 +171,17 @@ demo-materio-mvp/
 
 ### 3.1 Stratégie d'extraction
 
-Matério utilise Magento 2 comme plateforme e-commerce. Contrairement à Patrick Morin qui exposait une API Bloomreach Discovery, Matério utilise probablement l'infrastructure Magento native. Trois approches sont envisagées :
+**État actuel (MVP implémenté) :** Le catalogue complet de **6 978 produits** a été extrait via un scraper Node.js à **3 niveaux de fallback** développé pour la plateforme Magento 2 de materio.ca :
 
-#### Approche A — Magento 2 REST API (prioritaire)
+1. **Tier 1 — REST API Magento 2** : `GET /rest/V1/products?searchCriteria[...]` avec pagination (50 produits/page)
+2. **Tier 2 — GraphQL Magento 2** : `POST /graphql` avec requête `products(pageSize: 50)` — extraction des SKU, prix, images, catégories
+3. **Tier 3 — HTML Scraping (Cheerio)** : Parcours des 10 catégories principales avec pagination (max 5 pages/catégorie, 400ms entre requêtes)
+
+Le scraper applique automatiquement le fallback : si le REST API échoue → GraphQL → HTML. Extraction totale en **165.5 secondes**, retry automatique (3 tentatives), rate limiting intégré.
+
+**Sélection pour le prompt IA :** Le serveur charge le catalogue au démarrage via `loadCatalog()`. Les produits en stock sont groupés par sous-catégorie de niveau 2, et le **top 1 par sous-catégorie** est sélectionné pour le system prompt (~200-300 produits représentatifs). Le catalogue complet (6 978 produits) reste accessible via l'outil `search_catalog`.
+
+#### Approche A — Magento 2 REST API (Tier 1 — implémenté ✅)
 
 Tester les endpoints Magento 2 standard :
 ```
@@ -182,7 +193,7 @@ GET https://www.materio.ca/rest/V1/products?searchCriteria[filter_groups][0][fil
 **Avantage :** Données structurées, pagination native, JSON direct  
 **Risque :** L'API REST peut être protégée par authentification ou désactivée
 
-#### Approche B — Magento 2 GraphQL
+#### Approche B — Magento 2 GraphQL (Tier 2 — implémenté ✅)
 
 ```graphql
 {
@@ -204,7 +215,7 @@ GET https://www.materio.ca/rest/V1/products?searchCriteria[filter_groups][0][fil
 **Avantage :** Plus flexible, requêtes ciblées  
 **Risque :** Peut être désactivé ou limité
 
-#### Approche C — HTML Scraping (fallback)
+#### Approche C — HTML Scraping (Tier 3 — implémenté ✅)
 
 Scraper le catalogue via les pages de recherche Magento :
 ```
@@ -224,17 +235,17 @@ Données observées dans le HTML :
 **Avantage :** Fonctionne toujours  
 **Inconvénient :** Plus fragile, pas de stock par magasin nativement
 
-### 3.2 Plan d'extraction par priorité
+### 3.2 Plan d'extraction par priorité — Résultat
 
-| Étape | Action | Durée estimée |
-|---|---|---|
-| 1 | Tester `GET /rest/V1/products` (API REST Magento) | 30 min |
-| 2 | Tester `POST /graphql` (API GraphQL Magento) | 30 min |
-| 3 | Si APIs indisponibles → implémenter scraper HTML par catégorie | 3-4h |
-| 4 | Scraper les 10 catégories principales par pagination | 2-3h |
-| 5 | Extraire les fiches produit individuelles pour données complètes | 2-3h |
-| 6 | Structurer en `catalog-materio.json` | 1-2h |
-| **Total** | | **5 – 8h** |
+| Étape | Action | Durée | Statut |
+|---|---|---|---|
+| 1 | Tester `GET /rest/V1/products` (API REST Magento) | 30 min | ✅ |
+| 2 | Tester `POST /graphql` (API GraphQL Magento) | 30 min | ✅ |
+| 3 | Implémenter scraper HTML par catégorie (10 catégories) | 3-4h | ✅ |
+| 4 | Scraper 3-tier : REST → GraphQL → HTML avec fallback | 2-3h | ✅ |
+| 5 | Extraction complète : **6 978 produits en 165.5s** | Auto | ✅ |
+| 6 | Structurer en `catalog-materio.json` + `services.json` | 1-2h | ✅ |
+| **Total** | | **~6h** | **✅ Fait** |
 
 ### 3.3 Catégories à extraire
 
@@ -313,9 +324,9 @@ Produits de la circulaire / vedettes du site :
   "metadata": {
     "merchant": "Matério",
     "extracted_at": "2026-04-07T14:00:00Z",
-    "total_products": 10250,
+    "total_products": 6978,
     "total_stores": 6,
-    "source": "materio.ca (Magento 2)"
+    "source": "materio.ca (Magento 2 GraphQL)"
   },
   "products": [
     {
@@ -972,15 +983,27 @@ Métriques augmentées par rapport à Patrick Morin pour inclure les services :
 
 ### 5.5 Interaction dans la démo (MVP implémenté)
 
-Le MVP utilise GPT-4o en temps réel — les scénarios ci-dessus servent de suggestions mais l'utilisateur peut poser n'importe quelle question. Le modèle utilise le function calling avec les fonctions suivantes :
+Le MVP utilise **GPT-4o-mini** (temp 0.4, max_tokens 2048) en temps réel — les scénarios ci-dessus servent de suggestions mais l'utilisateur peut poser n'importe quelle question. Le modèle utilise le function calling avec **6 outils IA** :
 
 | Fonction | Déclencheur | Action dans le UI |
 |---|---|---|
-| `show_products` | L'IA recommande des produits spécifiques | Affiche les cartes produits dans le panneau droit |
-| `show_services` | L'IA mentionne un service (coupe, livraison, estimation) | Affiche une carte service verte |
-| `show_financing` | Le panier dépasse 750 $ ou le client demande des versements | Affiche la carte financement avec calcul |
-| `show_checkout` | Le client veut acheter | Transition vers le checkout Stripe |
+| `search_catalog` | Recherche dans le catalogue complet (6 978 produits) | Retourne jusqu'à 10 produits, force ensuite `show_products` |
+| `show_products` | L'IA recommande des produits spécifiques | Affiche les cartes produits + cross-sell automatique (COMPLEMENT_MAP) |
+| `show_services` | L'IA mentionne un service (coupe, livraison, estimation) | Affiche une carte service avec vérification disponibilité par magasin |
+| `show_financing` | Le panier dépasse 750 $ ou le client demande des versements | Affiche la carte financement avec calcul (12-36 mois, 0% intérêts) |
 | `show_estimation` | Le client demande une estimation de projet | Affiche le récapitulatif et le formulaire pré-rempli |
+| `show_checkout` | Le client veut acheter | Transition vers le checkout Stripe |
+
+**Architecture du prompt IA :**
+- Catalogue échantillon : ~200-300 produits sélectionnés (top 1 par sous-catégorie L2) injectés dans le system prompt
+- Catalogue complet : 6 978 produits accessibles via `search_catalog` uniquement
+- 16 règles comportementales intégrées
+- 7 templates de projets (toiture, terrasse/patio, sous-sol, SDB, cabanon, clôture, peinture intérieure)
+- 12 formules de calcul de quantités (bardeaux, gypse, isolation, peinture, solives, etc.)
+- COMPLEMENT_MAP : 15 catégories de cross-sell automatique (bardeaux→clous/feutre/solin, peinture→rouleau/pinceau, etc.)
+- Boucle d'exécution : max 3 rounds (search → show_products + complements → réponse finale)
+
+**SSE Events envoyés au frontend :** `delta`, `products`, `complements`, `service`, `financing`, `estimation`, `checkout`, `error`
 
 **Suggestion chips :** pour guider les premières interactions :
 - 🏠 « Refaire ma toiture 1 200 pi² »
@@ -1164,7 +1187,7 @@ function calculateFinancing(amount) {
 }
 ```
 
-### 6.3 System Prompt — Agent IA Matério
+### 6.3 System Prompt — Agent IA Matério (GPT-4o-mini, temp 0.4)
 
 ```javascript
 const SYSTEM_PROMPT = `Tu es l'assistant commercial IA de Matério, une entreprise de quincaillerie, construction et rénovation fondée en 1979 dans les Laurentides au Québec. Matério possède 6 magasins et la plus grande cour à bois des Laurentides (500 000 pi² à Saint-Jérôme).
@@ -1372,7 +1395,7 @@ ${catalogText}`;
 
 ## 10. Plan d'exécution semaine par semaine
 
-### SEMAINE 1 — Recherche, extraction de données et scraper
+### SEMAINE 1 — Recherche, extraction de données et scraper ✅ Complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -1384,9 +1407,9 @@ ${catalogText}`;
 | J | Extraction catalogue P2 | Scraper Saisonnier, Décoration, Poêles, Poutrelles | 2h | ~10 000+ produits total |
 | J-V | Données magasins + services | Créer `stores.json` (6 magasins) et `services.json` (coupe, livraison, financement, estimation) | 2h | Fichiers JSON finaux |
 | V | Structuration ACP | Convertir au format `catalog-materio.json`, valider les données, tester la qualité | 2h | Catalogue ACP validé |
-| **Total S1** | | | **20h** | ~10 000+ produits + 6 magasins + 4 services en JSON |
+| **Total S1** | | | **20h** | 6 978 produits + 6 magasins + 6 services en JSON ✅ |
 
-### SEMAINE 2 — Développement de l'application démo
+### SEMAINE 2 — Développement de l'application démo ✅ Complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -1399,9 +1422,9 @@ ${catalogText}`;
 | J | Scénario 2 — Comptoir | Test complet : comptoir → centre de coupe → évier → checkout | 2h | Scénario 2 jouable |
 | V | Scénario 3 — Autoconstructeur | Test complet : commande lot → livraison chantier → compte charge | 2h | Scénario 3 jouable |
 | V | Scénario 4 — Estimation | Test complet : questions qualification → pré-estimation → transfert humain | 2h | Scénario 4 jouable |
-| **Total S2** | | | **21h** | Application démo fonctionnelle, 4 scénarios jouables |
+| **Total S2** | | | **21h** | Application démo fonctionnelle, 4 scénarios jouables ✅ |
 
-### SEMAINE 3 — Checkout, polish et vidéo
+### SEMAINE 3 — Checkout, polish et vidéo ✅ Partiellement complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -1415,7 +1438,7 @@ ${catalogText}`;
 | V | Montage teaser | 30 secondes de highlights, musique dynamique | 1.5h | Teaser 30s (MP4) |
 | **Total S3** | | | **18.5h** | Vidéo démo + teaser + application finalisée |
 
-### SEMAINE 4 — Documents et approche commerciale
+### SEMAINE 4 — Documents et approche commerciale ✅ Partiellement complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -1440,14 +1463,14 @@ ${catalogText}`;
 
 ### RÉSUMÉ DES HEURES
 
-| Semaine | Focus | Heures |
-|---|---|---|
-| S1 | Données, recherche, scraper Magento 2 | 20h |
-| S2 | Développement démo (fonctions services + 4 scénarios) | 21h |
-| S3 | Checkout, polish, vidéo | 18.5h |
-| S4 | Documents, déploiement, contact | 11.5h |
-| S5 | Suivi / relances | 3.5h |
-| **Total** | | **74.5h** |
+| Semaine | Focus | Heures | Statut |
+|---|---|---|---|
+| S1 | Données, recherche, scraper Magento 2 | 20h | ✅ |
+| S2 | Développement démo (6 tools IA + 4 scénarios) | 21h | ✅ |
+| S3 | Checkout, polish, vidéo | 18.5h | ✅ Partiel (vidéo ⏳) |
+| S4 | Documents, déploiement, contact | 11.5h | ✅ Partiel (approche ⏳) |
+| S5 | Suivi / relances | 3.5h | ⏳ |
+| **Total** | | **74.5h** | **~85% fait** |
 
 > **Note :** 2.5h de plus que Patrick Morin (72h) dû au scraper Magento non-Bloomreach et aux fonctions services additionnelles.
 
@@ -1502,7 +1525,7 @@ ${catalogText}`;
 | **Vrais produits** | Les produits affichent données réelles (prix, SKU, images) | Prix vérifiés sur materio.ca (échantillon 20 produits) |
 | **Services fonctionnels** | Cartes service (coupe, livraison, estimation, financement) s'affichent | 4 types de cartes service testés |
 | **Financement correct** | Calcul 12/18/24/36 mois conforme aux règles Matério | 4 tranches testées avec montants limites |
-| **Animation réaliste** | Streaming SSE token-by-token fluide, GPT-4o temps réel | Réponses naturelles, pas de lag |
+| **Animation réaliste** | Streaming SSE token-by-token fluide, GPT-4o-mini temps réel | Réponses naturelles, pas de lag |
 | **Navigation fluide** | Chat IA + produits + services sans bug | 4 scénarios complets consécutifs sans bug |
 | **Taxes QC correctes** | TPS (5%) et TVQ (9,975%) calculées correctement | Vérifié sur 4 scénarios |
 | **Stock par magasin** | Stock affiché est spécifique au magasin sélectionné | Testé pour 3 magasins différents |
@@ -1531,9 +1554,9 @@ ${catalogText}`;
 
 ---
 
-## Annexe A — Comparaison des approches de scraping
+## Annexe A — Comparaison des approches de scraping (toutes implémentées ✅)
 
-### Priorité 1 : API REST Magento 2
+### Priorité 1 : API REST Magento 2 (Tier 1 — implémenté ✅)
 
 ```bash
 # Test rapide — exécuter depuis le terminal
@@ -1542,7 +1565,7 @@ curl -s "https://www.materio.ca/rest/V1/products?searchCriteria[pageSize]=1" | h
 
 Si la réponse contient du JSON avec des produits → utiliser cette approche.
 
-### Priorité 2 : GraphQL Magento 2
+### Priorité 2 : GraphQL Magento 2 (Tier 2 — implémenté ✅)
 
 ```bash
 curl -s -X POST "https://www.materio.ca/graphql" \
@@ -1550,7 +1573,7 @@ curl -s -X POST "https://www.materio.ca/graphql" \
   -d '{"query":"{ products(search:\"bois\", pageSize:1) { total_count items { sku name } } }"}'
 ```
 
-### Priorité 3 : HTML Scraping
+### Priorité 3 : HTML Scraping (Tier 3 — implémenté ✅ via Cheerio)
 
 ```javascript
 // scraper/html-fallback.js — Structure du scraper HTML

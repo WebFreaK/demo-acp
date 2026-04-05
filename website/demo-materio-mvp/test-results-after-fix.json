@@ -1,0 +1,258 @@
+[
+  {
+    "id": 1,
+    "question": "Je veux refaire ma toiture, maison 30×40 pieds, 2 versants",
+    "elapsed": "7.3s",
+    "productsCount": 5,
+    "complementsCount": 5,
+    "totalProducts": 10,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre projet de toiture de maison de 30×40 pieds (1200 pi²), voici les matériaux recommandés :\n\n### Matériaux principaux\n- **Bardeau collection DURATION** (6 paquets) : 43.99$ chacun\n- **Bardeaux"
+  },
+  {
+    "id": 2,
+    "question": "Je construis une terrasse 12×16 en bois traité, hauteur 2 pieds",
+    "elapsed": "8.5s",
+    "productsCount": 3,
+    "complementsCount": 6,
+    "totalProducts": 9,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre terrasse de 12' x 16' (192 pi²), voici les matériaux nécessaires :\n\n### Matériaux principaux\n1. **Bois de pin traité tanatone 8 po x 8 po (6 pièces)**  \n   - **Prix : 139.99$**  \n   - **PID"
+  },
+  {
+    "id": 3,
+    "question": "Je finis mon sous-sol, 600 pi², plafond 8 pieds",
+    "elapsed": "6.8s",
+    "productsCount": 3,
+    "complementsCount": 6,
+    "totalProducts": 9,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre projet de finition de sous-sol de 600 pi², voici les matériaux que je vous recommande :\n\n### Matériaux principaux\n1. **Gypse ½\"** (vis à gypse) : \n   - **Vis en bande pour le gypse No. 6 1 "
+  },
+  {
+    "id": 4,
+    "question": "Je refais ma salle de bain au complet, douche en céramique 3×5",
+    "elapsed": "44.4s",
+    "productsCount": 10,
+    "complementsCount": 6,
+    "totalProducts": 16,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre projet de salle de bain avec une douche en céramique de 3x5 pieds, voici les matériaux principaux et complémentaires que je vous recommande :\n\n### Matériaux principaux\n1. **Tuile de porcela"
+  },
+  {
+    "id": 5,
+    "question": "Je veux construire un cabanon 10×12",
+    "elapsed": "9.5s",
+    "productsCount": 5,
+    "complementsCount": 5,
+    "totalProducts": 10,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour la construction de votre cabanon de 10×12, voici quelques options de remises disponibles :\n\n### Matériaux principaux\n1. **Remise Tremont**  \n   Prix : 2069.98$  \n   ![Remise Tremont](https://exam"
+  },
+  {
+    "id": 6,
+    "question": "Je dois refaire ma clôture, 80 pieds linéaires, 6 pieds de haut",
+    "elapsed": "9.0s",
+    "productsCount": 3,
+    "complementsCount": 6,
+    "totalProducts": 9,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre projet de clôture de 80 pieds linéaires et 6 pieds de haut, voici les matériaux que je vous recommande :\n\n### Matériaux principaux\n1. **Poteau de coin en bois traité tanatone Symphonie** (5"
+  },
+  {
+    "id": 7,
+    "question": "Je peins l'intérieur de ma maison, 1200 pi² de murs",
+    "elapsed": "9.3s",
+    "productsCount": 10,
+    "complementsCount": 3,
+    "totalProducts": 13,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Voici les produits recommandés pour peindre l'intérieur de votre maison, couvrant 1200 pi² de murs :\n\n### Matériaux principaux\n1. **Peinture intérieure perle MF Expérience latex/acrylique Base pâle** "
+  },
+  {
+    "id": 8,
+    "question": "Je change mon plancher de cuisine pour du vinyle, 150 pi²",
+    "elapsed": "11.6s",
+    "productsCount": 10,
+    "complementsCount": 1,
+    "totalProducts": 11,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null
+    ],
+    "responseExcerpt": "Voici les options de plancher de vinyle que je vous recommande pour votre cuisine de 150 pi² :\n\n### Planchers de vinyle\n1. **Plancher de vinyle SPC EASY STREET modèle Scarab** - 35.17$ (3 paquets)\n2. "
+  },
+  {
+    "id": 9,
+    "question": "Je remplace 5 fenêtres et 1 porte patio",
+    "elapsed": "8.6s",
+    "productsCount": 4,
+    "complementsCount": 6,
+    "totalProducts": 10,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Voici les produits que je vous recommande pour le remplacement de vos 5 fenêtres et 1 porte patio :\n\n### Matériaux principaux\n1. **Fenêtre** : \n   - **Porte d'acier B-01 noire avec cadrage laminé de 7"
+  },
+  {
+    "id": 10,
+    "question": "Je refais le revêtement extérieur, 1500 pi², canexel",
+    "elapsed": "9.1s",
+    "productsCount": 10,
+    "complementsCount": 9,
+    "totalProducts": 19,
+    "toolCalls": [],
+    "productIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "complementIds": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "responseExcerpt": "Pour votre projet de revêtement extérieur de 1500 pi², voici quelques options de canexel que nous avons en magasin :\n\n### Matériaux principaux\n1. **Revêtement extérieur Ridgewood D-5 Grade A Charbon N"
+  }
+]

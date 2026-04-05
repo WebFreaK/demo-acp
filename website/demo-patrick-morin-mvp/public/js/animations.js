@@ -24,6 +24,8 @@ const Animations = {
       processed = processed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
       // Italic: *text*
       processed = processed.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+      // Italic: _text_
+      processed = processed.replace(/(?<!\w)_([^_]+)_(?!\w)/g, '<em>$1</em>');
 
       // Table rows
       if (processed.trim().startsWith('|') && processed.trim().endsWith('|')) {
@@ -48,6 +50,12 @@ const Animations = {
       // Bullet points
       if (processed.trim().match(/^[•\-]\s/)) {
         html += `<p style="padding-left:12px">• ${processed.trim().replace(/^[•\-]\s*/, '')}</p>`;
+        continue;
+      }
+
+      // Indented explanation lines (tool descriptions)
+      if (line.match(/^\s{2,}/) && processed.trim()) {
+        html += `<p style="padding-left:28px;color:#666;font-style:italic;margin-top:-4px">${processed.trim()}</p>`;
         continue;
       }
 

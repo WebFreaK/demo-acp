@@ -73,7 +73,8 @@
 | Couvre-plancher | /couvre-plancher | ~600+ |
 | Poutrelles | /poutrelles | ~100+ |
 
-**Estimation du catalogue total :** 10 000 – 20 000+ SKUs
+**Estimation du catalogue total :** 10 000 – 20 000+ SKUs  
+**Catalogue extrait (MVP) :** 6 978 produits scrapés via scraper Magento 2 (REST API + GraphQL + HTML fallback)
 
 **Sous-catégories détaillées (Matériaux) :** Bois et charpente, Toiture, Finition extérieure, Finition intérieure, Isolation, Panneaux, Paysagement, Maçonnerie, Tuyaux et raccords, Scellant, Portes et fenêtres, Échelles et escabeaux, Comptoirs, Étriers
 
@@ -227,12 +228,15 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 
 | Composante | Détail |
 |---|---|
-| **Format principal** | Application web interactive (Node.js + GPT-4o + Stripe) + vidéo enregistrée (2-3 minutes) |
+| **Format principal** | Application web interactive (Node.js + GPT-4o-mini + Stripe) + vidéo enregistrée (2-3 minutes) |
 | **Support visuel** | Écran partagé : conversation ChatGPT à gauche, fiches produits Matério à droite |
-| **Données** | Produits réels extraits du site materio.ca (Magento 2), rafraîchis automatiquement |
+| **Données** | 6 978 produits réels extraits du site materio.ca (Magento 2), rafraîchis automatiquement |
+| **Modèle IA** | GPT-4o-mini (température 0.4, max tokens 2048) avec 6 tools de function calling |
+| **Tools IA** | `show_products`, `show_services`, `show_financing`, `show_estimation`, `search_catalog`, `show_checkout` |
 | **Checkout** | Checkout Stripe réel avec paiement fonctionnel, taxes QC (TPS + TVQ) |
 | **Branding** | Thème aux couleurs Matério (rouge/blanc/noir du logo) |
 | **Chiffres clés** | Estimation du revenu additionnel potentiel pour Matério |
+| **Statut** | ✅ **MVP entièrement construit et fonctionnel** (3 avril 2026) |
 
 ---
 
@@ -243,24 +247,24 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 | Aspect | Observation | Impact |
 |---|---|---|
 | **Plateforme** | Magento 2, similaire à Patrick Morin | Familiarité avec la structure Magento |
-| **API de recherche** | Magento native `/catalogsearch/result/` — possiblement Elasticsearch derrière | Scraping standard Magento ou API REST Magento si accessible |
-| **Volume** | 10 000 – 20 000+ produits | Scraping paginé nécessaire, pipeline automatisé |
+| **API de recherche** | Magento 2 REST API (`/rest/V1/products`) + fallback GraphQL + HTML scraping | Scraping 3-tier implémenté et fonctionnel |
+| **Volume** | 6 978 produits extraits (sur ~10 000 – 20 000+ estimés) | Scraping paginé automatisé avec rafraîchissement horaire |
 | **Qualité des données** | Titres structurés, marques identifiées, SKUs visibles, prix avec promotions, images | Bon — similaire à PM |
-| **Particularité** | Pas de Bloomreach détecté (contrairement à Patrick Morin) — Magento natif ou Elasticsearch | Besoin d'identifier l'API de recherche exacte |
+| **Particularité** | Pas de Bloomreach (contrairement à PM) — Magento 2 natif | Scraper 3-tier (REST → GraphQL → HTML) implémenté avec succès |
 
 ### 7.2 Effort de création de la démo
 
-| Tâche | Heures estimées |
-|---|---|
-| Identification API et scraper Magento 2 (catalogue + magasins) | 5 – 8h |
-| Structuration des données au format feed ACP (JSON) | 3 – 5h |
-| Intégration GPT-4o avec function calling (chat + recommandations + services) | 6 – 8h |
-| Scénarios avec services (estimation, coupe, financement, livraison) | 4 – 6h |
-| Checkout Stripe réel avec taxes QC | 2 – 3h |
-| UI/branding Matério (adaptation du template Patrick Morin) | 3 – 4h |
-| Montage vidéo démo (2-3 minutes, voiceover FR) | 6 – 8h |
-| Rédaction proposition commerciale personnalisée | 4 – 6h |
-| **Total démo** | **33 – 48h** |
+| Tâche | Heures estimées | Statut |
+|---|---|---|
+| Identification API et scraper Magento 2 (catalogue + magasins) | 5 – 8h | ✅ |
+| Structuration des données au format feed ACP (JSON) | 3 – 5h | ✅ |
+| Intégration GPT-4o-mini avec function calling (chat + recommandations + services) | 6 – 8h | ✅ |
+| Scénarios avec services (estimation, coupe, financement, livraison) | 4 – 6h | ✅ |
+| Checkout Stripe réel avec taxes QC | 2 – 3h | ✅ |
+| UI/branding Matério (adaptation du template Patrick Morin) | 3 – 4h | ✅ |
+| Montage vidéo démo (2-3 minutes, voiceover FR) | 6 – 8h | ⏳ |
+| Rédaction proposition commerciale personnalisée | 4 – 6h | ✅ |
+| **Total démo** | **33 – 48h** | **~85% fait** |
 
 **Note :** Effort supérieur à Patrick Morin (~24-35h) car Matério n'a probablement pas de Bloomreach API → scraping Magento 2 direct plus complexe. De plus, les scénarios de services (coupe, estimation, financement) ajoutent une couche de logique conversationnelle.
 
@@ -348,14 +352,18 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 |---|---|---|
 | **Magasins** | 6 | 23 |
 | **Région** | Laurentides concentré | Laurentides + Lanaudière + Montérégie + Laval + Montréal |
-| **Catalogue estimé** | 10 000 – 20 000+ | 15 000 – 30 000+ |
+| **Catalogue extrait** | 6 978 produits (Magento 2 scraper 3-tier) | 10 200 produits (Bloomreach API) |
+| **Catalogue estimé total** | 10 000 – 20 000+ | 15 000 – 30 000+ |
 | **Plateforme** | Magento 2 | Magento 2 (+ Bloomreach) |
+| **Modèle IA** | GPT-4o-mini (température 0.4, optimisé coûts) | GPT-4o (température 0.7) |
+| **Tools IA** | 6 (produits, services, financement, estimation, recherche, checkout) | 2 (produits, checkout) |
 | **B2B** | Autoconstructeurs + compte charge | PM PRO (programme formalisé) |
 | **Chat existant** | Non | Oui (widget chat) |
 | **Services différenciants** | Centre de coupe, livraison toit, estimation, financement | Livraison, circulaire, blog inspirations |
 | **Score ACP** | 21.5/25 | 22/25 |
 | **Contrat potentiel** | 35 000 $ – 80 000 $ | 45 000 $ – 90 000 $ |
 | **Avantage unique IA** | Services physiques (coupe, estimation) vendus via IA | Volume de catalogue + B2B PM PRO |
+| **Statut démo** | ✅ MVP fonctionnel (3 avril 2026) | ✅ MVP fonctionnel (3 avril 2026) |
 
 **Verdict :** Matério est un candidat légèrement plus petit mais avec un **angle services** très fort que Patrick Morin n'a pas. La démo peut se différencier en mettant l'accent sur les services exclusifs (coupe sur mesure, livraison spécialisée, estimation augmentée).
 
@@ -363,28 +371,29 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 
 ## 11. Plan d'exécution de la démo
 
-### Phase 1 — Préparation (Semaine 1)
+### Phase 1 — Préparation (Semaine 1) ✅ Complétée
 
-- [ ] Auditer l'API Magento 2 de materio.ca (REST API, GraphQL, ou HTML scraping)
-- [ ] Scraper le catalogue produits (objectif : 5 000 – 10 000+ produits)
-- [ ] Extraire les données des 6 magasins (adresses, horaires, téléphones)
-- [ ] Structurer les données au format ACP JSON
+- [x] Auditer l'API Magento 2 de materio.ca (REST API, GraphQL, et HTML scraping — 3-tier fallback implémenté)
+- [x] Scraper le catalogue produits (résultat : **6 978 produits** extraits)
+- [x] Extraire les données des 6 magasins (adresses, horaires, téléphones) → `data/stores.json`
+- [x] Structurer les données au format ACP JSON → `data/catalog-materio.json`
 - [ ] Rechercher le contact décisionnel (président, VP opérations, directeur marketing — LinkedIn)
 
-### Phase 2 — Construction démo (Semaine 2)
+### Phase 2 — Construction démo (Semaine 2) ✅ Complétée
 
-- [ ] Adapter le template Patrick Morin pour Matério (branding, couleurs, logo)
-- [ ] Implémenter les scénarios conversationnels avec GPT-4o (function calling)
-- [ ] Ajouter la logique « services » : estimation IA, calcul financement, suggestion coupe, livraison spécialisée
-- [ ] Checkout Stripe avec taxes QC
-- [ ] Tester les 4 scénarios de démo end-to-end
+- [x] Adapter le template Patrick Morin pour Matério (branding, couleurs, logo)
+- [x] Implémenter les scénarios conversationnels avec GPT-4o-mini (6 function calls)
+- [x] Ajouter la logique « services » : estimation IA, calcul financement, suggestion coupe, livraison spécialisée
+- [x] Checkout Stripe avec taxes QC
+- [x] Tester les scénarios de démo end-to-end (10 scénarios testés : toiture, terrasse, sous-sol, salle de bain, cabanon, peinture, clôture, produit spécifique, info magasin, cross-sell)
+- [x] Implémenter `search_catalog` pour recherche dans les 6 978 produits
+- [x] Rédiger la proposition commerciale personnalisée → `docs/proposition.md`
+- [x] Préparer le one-pager PDF d'accompagnement → `docs/one-pager.md`
 
 ### Phase 3 — Production vidéo (Semaine 3)
 
 - [ ] Enregistrer la vidéo démo (screen recording + voiceover FR)
 - [ ] Montage professionnel avec titres, transitions, chiffres clés
-- [ ] Rédiger la proposition commerciale personnalisée
-- [ ] Préparer le one-pager PDF d'accompagnement
 
 ### Phase 4 — Approche commerciale (Semaine 3-4)
 
@@ -421,8 +430,8 @@ Si Patrick Morin **ET** Matério deviennent clients, la position stratégique es
 | **Couverture géographique** | 29 magasins couvrant les Laurentides, Lanaudière, Montérégie, Laval, Montréal |
 | **Revenu contractuel** | 80 000 $ – 170 000 $ (intégrations combinées) |
 | **Récurrence mensuelle** | 3 000 $ – 5 500 $/mois (maintenance combinée) |
-| **Cataloque combiné** | 25 000 – 50 000+ produits dans ChatGPT Commerce |
-| **Argument commercial** | « Nous équipons déjà les deux plus grands indépendants de quincaillerie des Laurentides » |
+| **Catalogue combiné** | ~17 178 produits déjà extraits (6 978 Matério + 10 200 PM), 25 000 – 50 000+ estimé total |
+| **Argument commercial** | « Nous équipons déjà les deux plus grands indépendants de quincaillerie des Laurentides — **démos fonctionnelles disponibles** » |
 | **Effet de réseau** | Chaque intégration valide la plateforme et accélère les ventes suivantes (BMR, Canac, etc.) |
 
 Le cas Matério + Patrick Morin devient une **preuve de concept sectorielle** pour l'ensemble du marché de la quincaillerie indépendante au Québec.

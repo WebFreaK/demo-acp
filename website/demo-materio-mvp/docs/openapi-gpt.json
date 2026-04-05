@@ -1,0 +1,276 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Matério — Catalogue Rénovation",
+    "description": "API pour accéder au catalogue de produits Matério, centres de rénovation dans les Laurentides au Québec. Permet de rechercher des produits, analyser des projets de rénovation avec liste de matériaux complète, et obtenir les informations sur les magasins et services.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://demo-materio.vercel.app"
+    }
+  ],
+  "paths": {
+    "/api/gpt?action=search": {
+      "post": {
+        "operationId": "searchProducts",
+        "summary": "Rechercher des produits dans le catalogue Matério (6978 produits)",
+        "description": "Recherche par mots-clés en français dans le catalogue complet de Matério. Retourne jusqu'à 10 produits avec pid, titre, prix, catégorie. Utilisez le paramètre 'category' pour filtrer par catégorie de produit.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["search"],
+                    "default": "search"
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "Mots-clés de recherche en français (ex: 'bardeau asphalte', 'vis terrasse 3 pouces', 'peinture intérieure')"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Filtre optionnel par catégorie (ex: 'Bardeau', 'Épinette', 'Contreplaqué', 'Peinture', 'Bois traité brun', 'Isolation')"
+                  }
+                },
+                "required": ["action", "query"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Résultats de recherche",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pid": { "type": "string", "description": "Identifiant unique du produit" },
+                          "title": { "type": "string" },
+                          "price": { "type": "string", "description": "Prix en dollars canadiens" },
+                          "currency": { "type": "string" },
+                          "category": { "type": "string" },
+                          "brand": { "type": "string" },
+                          "in_stock": { "type": "boolean" },
+                          "url": { "type": "string" }
+                        }
+                      }
+                    },
+                    "total_found": { "type": "integer" },
+                    "catalog_size": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gpt?action=project": {
+      "post": {
+        "operationId": "analyzeProject",
+        "summary": "Analyser un projet de rénovation et obtenir la liste complète de matériaux",
+        "description": "Analyse un projet (toiture, terrasse, sous-sol, salle de bain, cabanon, garage, clôture, peinture) et retourne tous les matériaux nécessaires avec quantités calculées, outils recommandés, et prix total. Toujours fournir les dimensions pour un calcul précis.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["project"],
+                    "default": "project"
+                  },
+                  "project_type": {
+                    "type": "string",
+                    "enum": ["toiture", "terrasse", "sous_sol", "salle_de_bain", "cabanon", "garage", "cloture", "peinture"],
+                    "description": "Type de projet de rénovation ou construction"
+                  },
+                  "dimensions": {
+                    "type": "string",
+                    "description": "Dimensions du projet (ex: '1200 pi²', '12x16 pieds', '60 pieds linéaires')"
+                  }
+                },
+                "required": ["action", "project_type"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analyse complète du projet avec matériaux, outils et prix",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string" },
+                        "name": { "type": "string" },
+                        "icon": { "type": "string" },
+                        "dimensions": { "type": "object" }
+                      }
+                    },
+                    "materials": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pid": { "type": "string" },
+                          "title": { "type": "string" },
+                          "price": { "type": "string" },
+                          "quantity": { "type": "integer" },
+                          "quantity_formula": { "type": "string" },
+                          "subtotal": { "type": "string" },
+                          "role": { "type": "string" }
+                        }
+                      }
+                    },
+                    "tools": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pid": { "type": "string" },
+                          "title": { "type": "string" },
+                          "price": { "type": "string" },
+                          "importance": { "type": "string", "enum": ["essentiel", "tres_utile", "recommande"] },
+                          "explanation": { "type": "string" }
+                        }
+                      }
+                    },
+                    "pricing": {
+                      "type": "object",
+                      "properties": {
+                        "subtotal": { "type": "string" },
+                        "tps": { "type": "string" },
+                        "tvq": { "type": "string" },
+                        "total": { "type": "string" }
+                      }
+                    },
+                    "financing": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "months": { "type": "integer" },
+                        "monthly": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gpt?action=stores": {
+      "post": {
+        "operationId": "getStores",
+        "summary": "Obtenir la liste des 6 magasins Matério",
+        "description": "Retourne les informations sur les 6 succursales Matério dans les Laurentides: adresse, téléphone, services disponibles et heures d'ouverture.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["stores"],
+                    "default": "stores"
+                  }
+                },
+                "required": ["action"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Liste des magasins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stores": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string" },
+                          "address": { "type": "string" },
+                          "phone": { "type": "string" },
+                          "services": { "type": "array", "items": { "type": "string" } },
+                          "hours": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gpt?action=services": {
+      "post": {
+        "operationId": "getServices",
+        "summary": "Obtenir les services Matério (coupe, livraison, financement, estimation)",
+        "description": "Retourne les détails d'un service spécifique ou la liste de tous les services disponibles chez Matério.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["services"],
+                    "default": "services"
+                  },
+                  "service_type": {
+                    "type": "string",
+                    "enum": ["centre_de_coupe", "livraison_specialisee", "financement", "estimation", "programme_fidelite", "ouverture_compte"],
+                    "description": "Type de service spécifique (optionnel — sans ce paramètre, retourne la liste de tous les services)"
+                  }
+                },
+                "required": ["action"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Détails du service ou liste des services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

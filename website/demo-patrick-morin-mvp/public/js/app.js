@@ -6,6 +6,7 @@ const App = {
   // ═══════════ STATE ═══════════
   messages: [],       // Conversation history [{role, content}]
   cart: [],           // [{key, product, qty}]
+  displayedPids: new Set(), // Track displayed product IDs to avoid duplicates
   isStreaming: false,
   startTime: null,
   checkoutData: null, // Last checkout event from AI
@@ -159,6 +160,10 @@ const App = {
                 this._handleProducts(data);
                 break;
 
+              case 'tools':
+                this._handleTools(data);
+                break;
+
               case 'checkout':
                 this._handleCheckout(data);
                 break;
@@ -219,14 +224,16 @@ const App = {
     let displayedCount = 0;
 
     (data.products || []).forEach(p => {
+      if (this.displayedPids.has(p.product_id)) return; // skip duplicates
       const product = PM_PRODUCTS[p.product_id];
       if (!product) return;
 
       const qty = p.quantity || 1;
-      const card = this._createProductCard(product, qty);
+      const card = this._createProductCard(product, qty, p.product_id);
       this.els.productsGrid.appendChild(card);
       cards.push(card);
 
+      this.displayedPids.add(p.product_id);
       this.cart.push({ key: p.product_id, product, qty });
       displayedCount++;
     });
@@ -235,6 +242,35 @@ const App = {
     this._updateMetrics();
 
     // Update products count
+    const total = this.els.productsGrid.querySelectorAll('.product-card').length;
+    this.els.productsCount.textContent = `${total} produit${total > 1 ? 's' : ''}`;
+  },
+
+  // ═══════════ TOOL EVENTS (outils recommandés) ═══════════
+  _handleTools(data) {
+    const products = (data.products || []).filter(p => PM_PRODUCTS[p.product_id] && !this.displayedPids.has(p.product_id));
+    if (!products.length) return;
+
+    // Add a separator header only once
+    if (!this.els.productsGrid.querySelector('.tools-header')) {
+      const separator = document.createElement('div');
+      separator.className = 'tools-header';
+      separator.innerHTML = '<span>🔧</span> Outils recommandés';
+      this.els.productsGrid.appendChild(separator);
+    }
+
+    const cards = [];
+    products.forEach(p => {
+      const product = PM_PRODUCTS[p.product_id];
+      const card = this._createProductCard(product, p.quantity || 1, p.product_id);
+      card.classList.add('tool-card');
+      this.els.productsGrid.appendChild(card);
+      cards.push(card);
+      this.displayedPids.add(p.product_id);
+      this.cart.push({ key: p.product_id, product, qty: p.quantity || 1 });
+    });
+
+    Animations.cascadeProducts(cards);
     const total = this.els.productsGrid.querySelectorAll('.product-card').length;
     this.els.productsCount.textContent = `${total} produit${total > 1 ? 's' : ''}`;
   },
@@ -338,7 +374,7 @@ const App = {
   },
 
   // ═══════════ PRODUCT CARDS ═══════════
-  _createProductCard(product, qty) {
+  _createProductCard(product, qty, pid) {
     const card = document.createElement('div');
     card.className = 'product-card';
 
@@ -360,6 +396,7 @@ const App = {
       <div class="product-card-body">
         <div class="product-card-brand">${this._esc(product.brand)}</div>
         <div class="product-card-title">${this._esc(product.title)}</div>
+        ${pid ? `<div class="product-card-pid">${this._esc(pid)}</div>` : ''}
         <div class="product-card-price">
           <span class="price-current">${Animations.formatCAD(product.price)}</span>
           ${product.originalPrice ? `<span class="price-original">${Animations.formatCAD(product.originalPrice)}</span>` : ''}

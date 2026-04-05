@@ -107,10 +107,10 @@ Ces entreprises ont des catalogues massifs, des budgets tech importants, et une 
 | E-commerce | Magento 2 complet (panier, stock magasin, livraison, circulaire), frontend O2web | 4/5 |
 | Budget | 23 magasins au Québec, revenu estimé ~200-300M$/an, lauréat « Sociétés mieux gérées au Canada » | 4/5 |
 | Fit ACP | Quincaillerie/rénovation = requêtes IA de projet parfaites (« de quoi j'ai besoin pour refaire mon patio ? ») | 5/5 |
-| Probabilité | Pression Home Depot/Canac/Amazon, entreprise régionale qui DOIT innover en digital. Démo déjà en construction. | 4/5 |
+| Probabilité | Pression Home Depot/Canac/Amazon, entreprise régionale qui DOIT innover en digital. Démo fonctionnelle construite ✅ | 5/5 |
 | **Total** | | **22/25** |
 | **Ville** | Lanaudière (siège), 23 succursales QC |
-| **Approche** | Démo en cours avec catalogue réel + IA GPT-4o. Double angle B2C (projets réno) + B2B (PM PRO entrepreneurs). |
+| **Approche** | Démo fonctionnelle complétée : 10 200 produits réels, IA GPT-4o, Stripe Checkout, déployée sur Vercel. Double angle B2C (projets réno) + B2B (PM PRO entrepreneurs). |
 | **Contrat estimé** | 25 000 $ – 45 000 $ (catalogue massif + potentiel B2B) |
 | **Note** | 🔥 **Pipeline le plus avancé** — démo fonctionnelle déjà construite. Étude de cas pour tout le secteur quincaillerie. |
 

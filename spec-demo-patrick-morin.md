@@ -1,6 +1,7 @@
 # Spécification et plan d'implémentation — Démo Patrick Morin
 
 **Date :** 1er avril 2026  
+**Statut :** ✅ MVP entièrement construit et fonctionnel (3 avril 2026)  
 **Document :** Spécification technique détaillée et plan d'exécution pas à pas  
 **Référence :** analyse-demo-patrick-morin.md
 
@@ -97,12 +98,13 @@ Convaincre la direction de Patrick Morin de signer un contrat d'intégration ACP
 | Composant | Technologie | Justification |
 |---|---|---|
 | **Application démo** | Node.js + HTML/CSS/JS vanilla | Serveur léger avec API endpoints pour chat (OpenAI) et checkout (Stripe) |
-| **Données produits** | JSON dynamique (catalog-acp.json, 10 200 produits) | Extrait via API Bloomreach Discovery, rafraîchissement horaire automatisé |
-| **Chat IA** | OpenAI GPT-4o avec function calling + SSE streaming | Conversations en temps réel (pas scriptées), recommandation de produits via `show_products` |
+| **Données produits** | JSON dynamique (catalog-acp.json, 10 200 produits) | Extrait via API Bloomreach Discovery, rafraîchissement horaire (cron.js), sélection subcatégorielle (top 3 par sous-catégorie L2, ~128 sous-catégories = ~300 produits dans le prompt) |
+| **Chat IA** | OpenAI GPT-4o avec function calling + SSE streaming (temp 0.7 dev / 0.4 prod, max_tokens 2048) | Conversations en temps réel, recommandation via `show_products`, checkout via `show_checkout` |
 | **Paiement** | Stripe Checkout (réel) | Checkout fonctionnel avec taxes QC et escompte PM PRO |
 | **Animations** | CSS transitions + JS requestAnimationFrame | Streaming token-by-token, cascade de cartes produits |
 | **Images produits** | 13 images locales + URLs Bloomreach pour le reste | Vrais visuels = crédibilité |
 | **Hébergement** | Vercel (Serverless Functions) | Déploiement serverless requis pour les API endpoints |
+| **API Catalogue** | Endpoint `/api/catalog` (Cache 5 min) | Sert le catalogue dynamiquement au frontend, auto-reload toutes les 5 minutes |
 | **Scraper** | Node.js + Bloomreach Discovery API | Extraction automatisée de 10 200 produits + 23 magasins |
 
 ### 2.3 Structure de fichiers
@@ -145,7 +147,14 @@ demo-patrick-morin-mvp/
 
 ### 3.1 Sélection des produits
 
-**État actuel (MVP implémenté) :** Le catalogue complet de **10 200 produits** a été extrait automatiquement via l'API Bloomreach Discovery de patrickmorin.com, dépassant largement l'objectif initial de 60 produits. Le scraper (Node.js) rafraîchit les données automatiquement toutes les heures via un cron job.
+**État actuel (MVP implémenté) :** Le catalogue complet de **10 200 produits** a été extrait automatiquement via l'API Bloomreach Discovery de patrickmorin.com, dépassant largement l'objectif initial de 60 produits. Le scraper (Node.js) rafraîchit les données automatiquement toutes les heures via `scraper/cron.js`.
+
+**Sélection pour le prompt IA :** Le serveur charge le catalogue au démarrage et le recharge toutes les 5 minutes (`setInterval`). Les produits en stock (prix > 0) sont groupés par sous-catégorie de niveau 2, triés par stock total décroissant, et les **top 3 de chaque sous-catégorie** (~128 sous-catégories) sont injectés dans le system prompt — assurant une couverture équilibrée de tous les départements (~300 produits représentatifs).
+
+Le prompt système inclut également :
+- **Mapping d'upsell** : catégories complémentaires automatiques (bardeaux → feutre/clous, peinture → rouleau/ruban, etc.)
+- **Templates de projets** : 8 types (toiture, terrasse, sous-sol, salle de bain, cabanon, clôture, peinture, etc.) avec questions à poser et formules de calcul
+- **Formules de quantité** : bardeaux (3 paq./carré), contreplaqué (surface ÷ 32), gypse (périmètre × hauteur ÷ 32), peinture (1 gal ≈ 350-400 pi²), solives (longueur ÷ espacement + 1), etc.
 
 Les 3 scénarios de démo fonctionnent avec l'IA GPT-4o en temps réel — le modèle filtre et recommande les produits pertinents dynamiquement parmi les 10 200 du catalogue, incluant :
 
@@ -643,6 +652,13 @@ Objectif : montrer visuellement l'efficacité pendant la démo.
 
 Le MVP utilise GPT-4o en temps réel — les scénarios ci-dessus servent de **suggestions de conversation** mais l'utilisateur peut poser n'importe quelle question. Le modèle utilise le function calling pour afficher les produits (`show_products`) et déclencher le checkout (`show_checkout`).
 
+**Architecture du prompt IA :**
+- Catalogue dynamique : ~300 produits sélectionnés (top 3 par sous-catégorie L2 parmi ~128 sous-catégories) injectés dans le system prompt
+- Auto-reload : le serveur recharge le catalogue depuis `catalog-acp.json` toutes les 5 minutes
+- 8 templates de projets intégrés (toiture, terrasse, sous-sol, SDB, cabanon, clôture, peinture)
+- Formules de calcul de quantités (bardeaux, gypse, peinture, solives, etc.)
+- Mapping d'upsell automatique par catégorie
+
 L'interface propose des **suggestion chips** pour guider les premières interactions :
 - 🏡 « Construire un patio 12×16 »
 - 🔧 « Urgence plomberie »
@@ -819,7 +835,7 @@ Plan du document :
 
 ## 9. Plan d'exécution semaine par semaine
 
-### SEMAINE 1 — Recherche et extraction des données
+### SEMAINE 1 — Recherche et extraction des données ✅ Complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -829,9 +845,9 @@ Plan du document :
 | Me-J | Extraction produits (Scénario 3) | 15 produits salle de bain + gypse | 3h | 15 fiches produit JSON validées |
 | J-V | Extraction produits complémentaires | 10 produits populaires (barbecues, outils, etc.) | 2h | 10 fiches produit JSON validées |
 | V | Structuration données | Conversion au format ACP JSON, validation, création fichier stores.json | 3h | `catalog-acp.json` + `stores.json` finaux |
-| **Total S1** | | | **17h** | 10 200 produits + 23 magasins en JSON |
+| **Total S1** | | | **17h** | 10 200 produits + 23 magasins en JSON ✅ |
 
-### SEMAINE 2 — Développement de l'application démo
+### SEMAINE 2 — Développement de l'application démo ✅ Complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
@@ -844,14 +860,14 @@ Plan du document :
 | V | Scénario 1 complet | Brancher les 4 tours de conversation avec les 20 produits du patio | 2h | Scénario 1 jouable de bout en bout |
 | V | Scénario 2 complet | Brancher les 2 tours plomberie urgente | 1.5h | Scénario 2 jouable |
 | V | Scénario 3 complet | Brancher les 2 tours entrepreneur PM PRO | 2h | Scénario 3 jouable |
-| **Total S2** | | | **21.5h** | Application démo fonctionnelle, 3 scénarios jouables |
+| **Total S2** | | | **21.5h** | Application démo fonctionnelle, 3 scénarios jouables ✅ |
 
-### SEMAINE 3 — Checkout, polish et vidéo
+### SEMAINE 3 — Checkout, polish et vidéo ✅ Partiellement complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
-| L | Checkout Stripe | Checkout Stripe réel avec taxes QC, escompte PM PRO, pages success/cancel, branding PM | 3h | Checkout fonctionnel |
-| L-M | Polish UI | Responsive, transitions fluides, corrections visuelles, test sur projecteur/grand écran | 3h | Application finalisée et polie |
+| L | Checkout Stripe | Checkout Stripe réel avec taxes QC, escompte PM PRO, pages success/cancel, branding PM | 3h | Checkout fonctionnel ✅ |
+| L-M | Polish UI | Responsive, transitions fluides, corrections visuelles, test sur projecteur/grand écran | 3h | Application finalisée et polie ✅ |
 | M | Mode auto-play | Ajouter le mode lecture automatique pour l'enregistrement vidéo (timings calibrés) | 2h | Auto-play fonctionnel |
 | Me | Rédaction script voiceover | Écrire le texte du narrateur pour la vidéo 2:50 + teaser 30s | 2h | Scripts voiceover finaux |
 | Me-J | Enregistrement vidéo | OBS Studio : enregistrer 3 prises de la démo en auto-play, avec résolution 1080p | 2h | Fichiers vidéo bruts |
@@ -860,13 +876,13 @@ Plan du document :
 | V | Montage teaser | Couper 30 secondes de highlights, ajout musique dynamique | 1.5h | Teaser 30s finalisé (MP4) |
 | **Total S3** | | | **18.5h** | Vidéo démo + teaser + application finalisée |
 
-### SEMAINE 4 — Documents et approche commerciale
+### SEMAINE 4 — Documents et approche commerciale ✅ Partiellement complétée
 
 | Jour | Tâche | Détail | Heures | Livrable |
 |---|---|---|---|---|
-| L | One-pager | Rédiger + designer le one-pager PDF (Figma ou Canva) | 2h | One-pager PDF final |
-| L-M | Proposition commerciale | Rédiger les 6 pages de la proposition personnalisée PM | 4h | Proposition PDF finale |
-| M | Hébergement démo | Déployer l'application sur Vercel (serverless functions), obtenir l'URL propre | 1h | URL partageable de la démo |
+| L | One-pager | Rédiger + designer le one-pager PDF (Figma ou Canva) | 2h | One-pager PDF final ✅ |
+| L-M | Proposition commerciale | Rédiger les 6 pages de la proposition personnalisée PM | 4h | Proposition PDF finale ✅ |
+| M | Hébergement démo | Déployer l'application sur Vercel (serverless functions), obtenir l'URL propre | 1h | URL partageable de la démo ✅ |
 | Me | Revue complète | Relecture de tous les livrables, test démo end-to-end, validation chiffres | 2h | Tous livrables validés |
 | Me | Préparer l'approche | Rédiger le message LinkedIn + email d'accompagnement, personnalisés par contact | 1.5h | Templates de messages prêts |
 | J | Premier contact LinkedIn | Envoyer le message LinkedIn au contact #1 avec teaser vidéo | 0.5h | Message envoyé |
@@ -885,14 +901,14 @@ Plan du document :
 
 ### RÉSUMÉ DES HEURES
 
-| Semaine | Focus | Heures |
-|---|---|---|
-| S1 | Données, recherche et scraper | 17h |
-| S2 | Développement démo (Node.js + GPT-4o + Stripe) | 21.5h |
-| S3 | Checkout, polish, vidéo | 18.5h |
-| S4 | Documents, déploiement, contact | 11.5h |
-| S5 | Suivi / relances | 3.5h |
-| **Total** | | **72h** |
+| Semaine | Focus | Heures | Statut |
+|---|---|---|---|
+| S1 | Données, recherche et scraper | 17h | ✅ |
+| S2 | Développement démo (Node.js + GPT-4o + Stripe) | 21.5h | ✅ |
+| S3 | Checkout, polish, vidéo | 18.5h | ✅ Partiel (vidéo ⏳) |
+| S4 | Documents, déploiement, contact | 11.5h | ✅ Partiel (approche ⏳) |
+| S5 | Suivi / relances | 3.5h | ⏳ |
+| **Total** | | **72h** | **~80% fait** |
 
 ---
 
@@ -966,14 +982,14 @@ Plan du document :
 | Critère | Description |
 |---|---|
 | **Personnalisation** | Chaque mention de « Patrick Morin » est correcte, pas de placeholder oublié |
-| **Chiffres cohérents** | Les montants dans la proposition correspondent à la démo |
-| **Zéro faute** | Français impeccable — relecture par une deuxième personne idéalement |
-| **Format pro** | PDF bien formaté, logos HD, mise en page aérée |
-| **Conformité** | Aucune donnée confidentielle de PM utilisée sans consentement (données publiques du site seulement) |
-
-### 11.4 Checklist finale avant envoi
-
-- [ ] L'URL de la démo fonctionne (testée dans Chrome, Firefox, Safari)
+| *x] L'URL de la démo fonctionne (testée dans Chrome, Firefox, Safari)
+- [ ] La vidéo se lit correctement (testée sur mobile et desktop)
+- [ ] Le teaser fait < 30 secondes (compatible LinkedIn natif)
+- [x] Le PDF de la proposition s'ouvre correctement
+- [ ] Les coordonnées de contact sont correctes
+- [ ] Le message LinkedIn est personnalisé pour le contact spécifique
+- [x] Aucune mention d'un autre client ou concurrent dans les documents (pas de copier-coller d'un autre prospect)
+- [x] L'URL de la démo fonctionne (testée dans Chrome, Firefox, Safari)
 - [ ] La vidéo se lit correctement (testée sur mobile et desktop)
 - [ ] Le teaser fait < 30 secondes (compatible LinkedIn natif)
 - [ ] Le PDF de la proposition s'ouvre correctement

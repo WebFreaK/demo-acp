@@ -250,9 +250,79 @@ function htmlProductToAcp(item) {
   };
 }
 
+// ─── Per-Store Availability Enrichment ──────────────────────
+
+const WAREHOUSE_TO_STORE = {
+  entrepot_10: 'Saint-Jérôme',
+  entrepot_20: 'Terrebonne',
+  entrepot_40: 'Sainte-Sophie',
+  entrepot_50: 'Saint-Hippolyte',
+  entrepot_80: 'Mirabel (Saint-Benoît)',
+};
+
+async function fetchProductAvailability(productUrl) {
+  if (!cheerio || !productUrl) return null;
+  try {
+    const res = await fetch(productUrl, {
+      headers: { 'User-Agent': 'MaterioACP-Scraper/1.0' },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const availability = {};
+    $('.availability-table__warehouse.css-row').each((_, row) => {
+      const $row = $(row);
+      const warehouseId = $row.find('availability-warehouse').attr('data-warehouse-id');
+      const storeName = WAREHOUSE_TO_STORE[warehouseId];
+      if (!storeName) return;
+
+      // The second column (index 1) is "En magasin" — check for green SVG
+      const cols = $row.find('.css-col.middle');
+      const inStoreCol = cols.eq(0).html() || '';
+      const inStore = inStoreCol.includes('#57B816');
+      availability[storeName] = inStore;
+    });
+
+    return Object.keys(availability).length > 0 ? availability : null;
+  } catch {
+    return null;
+  }
+}
+
+async function enrichAvailability(products, log, concurrency = 10) {
+  log(`Enriching per-store availability for ${products.length} products (concurrency: ${concurrency})...`);
+  let done = 0;
+  let enriched = 0;
+
+  async function processProduct(product) {
+    const avail = await fetchProductAvailability(product.url);
+    if (avail) {
+      product.availability.quantity_by_store = avail;
+      enriched++;
+    }
+    done++;
+    if (done % 100 === 0 || done === products.length) {
+      log(`  Availability: ${done}/${products.length} fetched, ${enriched} enriched`);
+    }
+  }
+
+  // Process in batches with concurrency limit
+  for (let i = 0; i < products.length; i += concurrency) {
+    const batch = products.slice(i, i + concurrency);
+    await Promise.all(batch.map(p => processProduct(p)));
+    // Polite delay between batches
+    if (i + concurrency < products.length) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+
+  log(`Availability enrichment complete: ${enriched}/${products.length} products enriched`);
+}
+
 // ─── Main Scrape Function ───────────────────────────────────
 
-export async function scrapeFullCatalog({ onProgress } = {}) {
+export async function scrapeFullCatalog({ onProgress, skipAvailability = false } = {}) {
   const startTime = Date.now();
   const log = (msg) => {
     const ts = new Date().toISOString().slice(11, 19);
@@ -336,8 +406,19 @@ export async function scrapeFullCatalog({ onProgress } = {}) {
     return true;
   });
 
+  log(`Catalog scraped: ${allProducts.length} products via ${source}`);
+
+  // ── Per-store availability enrichment ───────────────────
+  if (!skipAvailability && cheerio) {
+    await enrichAvailability(allProducts, log);
+  } else if (skipAvailability) {
+    log('Skipping per-store availability enrichment (--skip-availability)');
+  } else {
+    log('Skipping per-store availability (cheerio not installed)');
+  }
+
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  log(`Scrape complete: ${allProducts.length} products via ${source} in ${elapsed}s`);
+  log(`Scrape complete: ${allProducts.length} products in ${elapsed}s`);
 
   // Load store data
   const storesData = JSON.parse(readFileSync(join(DATA_DIR, 'stores.json'), 'utf-8'));
@@ -377,7 +458,8 @@ export async function scrapeFullCatalog({ onProgress } = {}) {
 // ─── CLI Entry Point ────────────────────────────────────────
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  scrapeFullCatalog()
+  const skipAvailability = process.argv.includes('--skip-availability');
+  scrapeFullCatalog({ skipAvailability })
     .then(catalog => {
       console.log(`\n✅ Done: ${catalog.products.length} products scraped`);
       process.exit(0);

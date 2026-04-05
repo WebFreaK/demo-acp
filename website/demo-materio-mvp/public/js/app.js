@@ -7,6 +7,7 @@ const App = {
   // ═══════════ STATE ═══════════
   messages: [],       // Conversation history [{role, content}]
   cart: [],           // [{key, product, qty}]
+  displayedPids: new Set(), // Track displayed product IDs to avoid duplicates
   activeServices: [], // [{type, store, details}]
   financingPlan: null,
   isStreaming: false,
@@ -154,6 +155,10 @@ const App = {
                 this._handleProducts(data);
                 break;
 
+              case 'tools':
+                this._handleTools(data);
+                break;
+
               case 'complements':
                 this._handleComplements(data);
                 break;
@@ -226,14 +231,16 @@ const App = {
     const cards = [];
 
     (data.products || []).forEach(p => {
+      if (this.displayedPids.has(p.product_id)) return; // skip duplicates
       const product = MAT_PRODUCTS[p.product_id];
       if (!product) return;
 
       const qty = p.quantity || 1;
-      const card = this._createProductCard(product, qty);
+      const card = this._createProductCard(product, qty, p.product_id);
       this.els.productsGrid.appendChild(card);
       cards.push(card);
 
+      this.displayedPids.add(p.product_id);
       this.cart.push({ key: p.product_id, product, qty });
     });
 
@@ -244,24 +251,56 @@ const App = {
     this.els.productsCount.textContent = `${total} produit${total > 1 ? 's' : ''}`;
   },
 
-  // ═══════════ COMPLEMENT EVENTS (cross-sell) ═══════════
-  _handleComplements(data) {
-    const products = (data.products || []).filter(p => MAT_PRODUCTS[p.product_id]);
+  // ═══════════ TOOL EVENTS (outils recommandés) ═══════════
+  _handleTools(data) {
+    const products = (data.products || []).filter(p => MAT_PRODUCTS[p.product_id] && !this.displayedPids.has(p.product_id));
     if (!products.length) return;
 
-    // Add a separator header
-    const separator = document.createElement('div');
-    separator.className = 'complements-header';
-    separator.innerHTML = '<span>🛒</span> Pour compléter votre projet';
-    this.els.productsGrid.appendChild(separator);
+    // Add a separator header only once
+    if (!this.els.productsGrid.querySelector('.tools-header')) {
+      const separator = document.createElement('div');
+      separator.className = 'tools-header';
+      separator.innerHTML = '<span>🔧</span> Outils recommandés';
+      this.els.productsGrid.appendChild(separator);
+    }
 
     const cards = [];
     products.forEach(p => {
       const product = MAT_PRODUCTS[p.product_id];
-      const card = this._createProductCard(product, p.quantity || 1);
+      const card = this._createProductCard(product, p.quantity || 1, p.product_id);
+      card.classList.add('tool-card');
+      this.els.productsGrid.appendChild(card);
+      cards.push(card);
+      this.displayedPids.add(p.product_id);
+      this.cart.push({ key: p.product_id, product, qty: p.quantity || 1 });
+    });
+
+    Animations.cascadeProducts(cards);
+    const total = this.els.productsGrid.querySelectorAll('.product-card').length;
+    this.els.productsCount.textContent = `${total} produit${total > 1 ? 's' : ''}`;
+  },
+
+  // ═══════════ COMPLEMENT EVENTS (cross-sell) ═══════════
+  _handleComplements(data) {
+    const products = (data.products || []).filter(p => MAT_PRODUCTS[p.product_id] && !this.displayedPids.has(p.product_id));
+    if (!products.length) return;
+
+    // Add a separator header only once
+    if (!this.els.productsGrid.querySelector('.complements-header')) {
+      const separator = document.createElement('div');
+      separator.className = 'complements-header';
+      separator.innerHTML = '<span>�</span> Suggestions pour compléter';
+      this.els.productsGrid.appendChild(separator);
+    }
+
+    const cards = [];
+    products.forEach(p => {
+      const product = MAT_PRODUCTS[p.product_id];
+      const card = this._createProductCard(product, p.quantity || 1, p.product_id);
       card.classList.add('complement-card');
       this.els.productsGrid.appendChild(card);
       cards.push(card);
+      this.displayedPids.add(p.product_id);
     });
 
     Animations.cascadeProducts(cards);
@@ -328,6 +367,16 @@ const App = {
 
   _showCheckout(data) {
     this.els.checkoutItems.innerHTML = '';
+
+    // If cart is empty but server sent product_ids, rebuild cart from catalog
+    if (this.cart.length === 0 && data.product_ids && data.product_ids.length > 0) {
+      for (const pid of data.product_ids) {
+        const product = MAT_PRODUCTS[pid];
+        if (product) {
+          this.cart.push({ key: pid, product, qty: 1 });
+        }
+      }
+    }
 
     let subtotal = 0;
 
@@ -434,7 +483,7 @@ const App = {
   },
 
   // ═══════════ PRODUCT CARDS ═══════════
-  _createProductCard(product, qty) {
+  _createProductCard(product, qty, pid) {
     const card = document.createElement('div');
     card.className = 'product-card';
 
@@ -442,10 +491,15 @@ const App = {
       ? Math.round((1 - product.price / product.originalPrice) * 100)
       : 0;
 
-    const stockCount = product.availability?.['Saint-Jérôme'];
-    const hasStock = typeof stockCount === 'number' && stockCount > 0;
-    const stockLabel = hasStock ? `${stockCount} en stock` : 'Disponible en magasin';
-    const stockClass = hasStock && stockCount < 10 ? 'low' : '';
+    const qtyByStore = product.availability || {};
+    const storesAvailable = Object.entries(qtyByStore).filter(([, v]) => v);
+    const storeCount = storesAvailable.length;
+    const stockLabel = storeCount > 0
+      ? `Disponible dans ${storeCount} magasin${storeCount > 1 ? 's' : ''}`
+      : typeof product.inStock === 'boolean' && product.inStock
+        ? 'Disponible en magasin'
+        : 'Disponible en magasin';
+    const stockClass = storeCount === 0 ? '' : '';
     const hasImage = product.imageUrl && product.imageUrl.length > 0;
 
     card.innerHTML = `
@@ -458,6 +512,7 @@ const App = {
       <div class="product-card-body">
         <div class="product-card-brand">${this._esc(product.brand)}</div>
         <div class="product-card-title">${this._esc(product.title)}</div>
+        ${pid ? `<div class="product-card-pid">${this._esc(pid)}</div>` : ''}
         <div class="product-card-price">
           <span class="price-current">${Animations.formatCAD(product.price)}</span>
           ${product.originalPrice ? `<span class="price-original">${Animations.formatCAD(product.originalPrice)}</span>` : ''}

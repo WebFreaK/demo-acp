@@ -167,6 +167,7 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 | **Données** | 10 200 produits réels extraits via API Bloomreach Discovery, rafraîchis automatiquement chaque heure |
 | **Checkout** | Checkout Stripe réel avec paiement fonctionnel, taxes QC (TPS + TVQ) et escompte PM PRO |
 | **Chiffres clés** | Estimation du revenu additionnel potentiel pour Patrick Morin |
+| **Statut** | ✅ **MVP entièrement construit et fonctionnel** (3 avril 2026) |
 
 ---
 
@@ -174,15 +175,15 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 
 ### 6.1 Effort de création de la démo
 
-| Tâche | Heures estimées |
-|---|---|
-| Scraper automatisé Bloomreach API (10 200 produits + 23 magasins) | 4 – 6h |
-| Structuration des données au format feed ACP (JSON) | 3 – 5h |
-| Intégration GPT-4o avec function calling (chat + recommandations temps réel) | 6 – 8h |
-| Checkout Stripe réel avec taxes QC et escompte PM PRO | 3 – 4h |
-| Montage vidéo démo (2-3 minutes, professionnel) | 6 – 8h |
-| Rédaction du document d'accompagnement / proposition | 4 – 6h |
-| **Total démo** | **24 – 35h** |
+| Tâche | Heures estimées | Statut |
+|---|---|---|
+| Scraper automatisé Bloomreach API (10 200 produits + 23 magasins) | 4 – 6h | ✅ |
+| Structuration des données au format feed ACP (JSON) | 3 – 5h | ✅ |
+| Intégration GPT-4o avec function calling (chat + recommandations temps réel) | 6 – 8h | ✅ |
+| Checkout Stripe réel avec taxes QC et escompte PM PRO | 3 – 4h | ✅ |
+| Montage vidéo démo (2-3 minutes, professionnel) | 6 – 8h | ⏳ |
+| Rédaction du document d'accompagnement / proposition | 4 – 6h | ✅ |
+| **Total démo** | **24 – 35h** | **~80% fait** |
 
 ### 6.2 Effort estimé pour l'intégration réelle (post-vente)
 
@@ -251,26 +252,28 @@ Créer un **prototype fonctionnel avec IA réelle** montrant le parcours d'achat
 
 ## 9. Plan d'exécution de la démo
 
-### Phase 1 — Préparation (Semaine 1-2)
+### Phase 1 — Préparation (Semaine 1-2) ✅ Complétée
 
 - [x] Scraper automatisé Bloomreach API — 10 200 produits extraits avec rafraîchissement horaire
 - [x] Données structurées au format ACP JSON (catalogue complet + 23 magasins avec stock)
 - [x] Checkout Stripe fonctionnel configuré (mode test)
 - [ ] Rechercher le contact décisionnel (VP marketing, VP numérique, direction générale — LinkedIn)
 
-### Phase 2 — Construction démo (Semaine 2-3)
+### Phase 2 — Construction démo (Semaine 2-3) ✅ Complétée
 
 - [x] Chat GPT-4o temps réel avec function calling (show_products, show_checkout)
 - [x] Interface split-screen avec cartes produits dynamiques
 - [x] Checkout Stripe réel avec taxes QC et escompte PM PRO 10%
+- [x] Catalogue dynamique chargé depuis /api/catalog (suppression des données hardcodées)
+- [x] Sélection subcatégorielle pour le prompt système (top 3 par sous-catégorie, 128 sous-catégories couvertes)
 - [ ] Calculer les projections financières personnalisées (revenus, ROI)
 
 ### Phase 3 — Production vidéo (Semaine 3-4)
 
 - [ ] Enregistrer la vidéo démo (screen recording + voiceover en français)
 - [ ] Montage professionnel avec titres, transitions, chiffres clés
-- [ ] Rédiger la proposition commerciale personnalisée
-- [ ] Préparer le one-pager PDF d'accompagnement
+- [x] Rédiger la proposition commerciale personnalisée
+- [x] Préparer le one-pager PDF d'accompagnement
 
 ### Phase 4 — Approche commerciale (Semaine 4-5)
 

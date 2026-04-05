@@ -2,6 +2,7 @@
   "stores": [
     {
       "id": "store-st-jerome",
+      "warehouse_id": "entrepot_10",
       "name": "Saint-Jérôme",
       "address": "2159, boulevard Curé-Labelle, Saint-Jérôme (Qc) J7Y 1T1",
       "phone": "450-438-3577",
@@ -17,6 +18,7 @@
     },
     {
       "id": "store-terrebonne",
+      "warehouse_id": "entrepot_20",
       "name": "Terrebonne",
       "address": "7700, boulevard Laurier, Terrebonne (Qc) J7M 2K8",
       "phone": "450-478-7557",
@@ -31,6 +33,7 @@
     },
     {
       "id": "store-st-hippolyte",
+      "warehouse_id": "entrepot_50",
       "name": "Saint-Hippolyte",
       "address": "Saint-Hippolyte (Qc)",
       "phone": "450-224-8555",
@@ -57,6 +60,7 @@
     },
     {
       "id": "store-ste-sophie",
+      "warehouse_id": "entrepot_40",
       "name": "Sainte-Sophie",
       "address": "2019, boulevard Sainte-Sophie, Sainte-Sophie (Qc) J5J 2X3",
       "phone": "450-224-2918",
@@ -70,6 +74,7 @@
     },
     {
       "id": "store-mirabel-st-benoit",
+      "warehouse_id": "entrepot_80",
       "name": "Mirabel (Saint-Benoît)",
       "address": "3660, rue Chénier, Mirabel (Qc) J7N 2N1",
       "phone": "450-258-0129",
